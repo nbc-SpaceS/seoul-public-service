@@ -261,6 +261,8 @@
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
+            android:maxLength="50"
+            android:paddingEnd="8dp"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
