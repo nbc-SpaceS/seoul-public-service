@@ -158,9 +158,9 @@
                 android:id="@+id/rv_home_weather_week"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="20dp"
                 android:layout_marginTop="12dp"
                 android:clipToPadding="false"
+                android:paddingHorizontal="20dp"
                 app:layout_constraintBottom_toTopOf="@+id/tv_home_recent_title"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -192,10 +192,10 @@
                 android:id="@+id/vp_home_recent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="20dp"
                 android:layout_marginTop="8dp"
-                android:visibility="visible"
                 android:clipToPadding="false"
+                android:paddingHorizontal="20dp"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv_home_recent_description">
@@ -214,7 +214,7 @@
                 app:layout_constraintTop_toBottomOf="@id/vp_home_recent"
                 app:tabBackground="@drawable/background_home_recent_indicator_dot"
                 app:tabGravity="center"
-                app:tabIndicatorHeight="0dp"/>
+                app:tabIndicatorHeight="0dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
@@ -271,17 +271,41 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_search_results"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_search_results"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
         android:background="@color/total_background"
-        android:visibility="invisible"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_search" />
+        app:layout_constraintTop_toBottomOf="@+id/layout_search">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_search_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@color/total_background"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_home_empty_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:text="@string/fragment_category_tv_reservation_empty"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/cl_search_results"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
         android:id="@+id/view_control_rv_search_results"
