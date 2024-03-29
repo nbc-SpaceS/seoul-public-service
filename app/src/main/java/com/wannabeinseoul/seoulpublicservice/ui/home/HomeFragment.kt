@@ -161,6 +161,8 @@ class HomeFragment : Fragment() {
                         clHomeRegionList.isVisible = false
 
                         // 검색 결과를 표시하는 RecyclerView를 보이게 함
+                        clSearchResults.isVisible = true
+                        tvHomeEmptyDescription.isVisible = false
                         rvSearchResults.visibility = View.VISIBLE
 
                         // 키보드 숨기기
@@ -171,6 +173,16 @@ class HomeFragment : Fragment() {
 
                         // 클릭된 결과 아이템의 SVCID를 상세 페이지에 전달
                         searchClick(adapter)
+                    } else {
+                        clSearchResults.isVisible = true
+                        tvHomeEmptyDescription.isVisible = true
+                        rvSearchResults.visibility = View.INVISIBLE
+
+                        // 키보드 숨기기
+                        hideKeyboard()
+
+                        // et_search 포커스 제거
+                        etSearch.clearFocus()
                     }
                 }
             }
@@ -313,12 +325,14 @@ class HomeFragment : Fragment() {
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     // RecyclerView가 보일 때만 ViewPager, TabLayout을 보이게 하고, RecyclerView를 숨김
-                    if (binding.rvSearchResults.visibility == View.VISIBLE) {
+                    if (binding.clSearchResults.visibility == View.VISIBLE) {
                         // 뒤로 가기 버튼을 누를 때 cl_home_region_list를 숨깁니다.
                         binding.clHomeRegionList.isVisible = false
                         binding.tvServiceList.visibility = View.VISIBLE
                         binding.viewPager.visibility = View.VISIBLE
                         binding.tabLayout.visibility = View.VISIBLE
+                        binding.clSearchResults.isVisible = false
+                        binding.tvHomeEmptyDescription.isVisible = false
                         binding.rvSearchResults.visibility = View.GONE
                     } else if (backPressedOnce) {
                         isEnabled = false
