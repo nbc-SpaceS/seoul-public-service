@@ -70,6 +70,7 @@
         android:imeOptions="actionSearch"
         android:inputType="text"
         android:maxLines="1"
+        android:maxLength="50"
         android:paddingHorizontal="8dp"
         android:textColor="@color/total_text_color"
         android:textColorHint="@color/review_hint_text"

@@ -127,8 +127,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
 
-//        locationSource = FusedLocationSource(this, 5000)
-
         addCallBack()
         initViewModel()
 
