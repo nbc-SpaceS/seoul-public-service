@@ -41,7 +41,6 @@ class RecommendationAdapter :
         }
     }
 
-
     /** 뷰홀더들 */
 
     inner class HorizontalViewHolder(
@@ -60,7 +59,8 @@ class RecommendationAdapter :
 
                     if (lastVisiblePosition == lastPosition) {
                         Log.d("dkj", "현재 개수 : ${recyclerView.adapter?.itemCount}")
-                        item.infiniteScrollLambdaFunc(item.keyword,
+                        item.infiniteScrollLambdaFunc(
+                            item.keyword,
                             recyclerView.adapter?.itemCount?.plus(5) ?: 5
                         )
                     }

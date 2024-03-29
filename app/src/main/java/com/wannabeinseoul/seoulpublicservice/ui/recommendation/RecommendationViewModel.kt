@@ -35,7 +35,8 @@ class RecommendationViewModel(
         _multiViews.value = list
     }
 
-    private val isLoading = MutableLiveData<Boolean>()
+    val isLoading = MutableLiveData<Boolean>()
+    val refreshLoading = MutableLiveData<Boolean>()
 
     init {
         isLoading.value = true // 로딩 상태로 초기화
@@ -94,6 +95,7 @@ class RecommendationViewModel(
             dataList = recommendationHorizontalDataList
             _horizontalDataList.postValue(recommendationHorizontalDataList)
             isLoading.postValue(false)
+            refreshLoading.postValue(false)
             isFirst = false
         }
     }

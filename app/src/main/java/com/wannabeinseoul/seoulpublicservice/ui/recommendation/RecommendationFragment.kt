@@ -9,6 +9,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentRecommendationBinding
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
 import com.wannabeinseoul.seoulpublicservice.ui.recommendation.RecommendationViewModel.Companion.factory
@@ -16,7 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class RecommendationFragment : Fragment() {
+class RecommendationFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private lateinit var binding: FragmentRecommendationBinding
     private val viewModel: RecommendationViewModel by viewModels { factory }
@@ -40,6 +42,8 @@ class RecommendationFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initView()
         initViewModel()
+        binding.slRefresh.setOnRefreshListener(this)
+        refreshColor()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -48,11 +52,7 @@ class RecommendationFragment : Fragment() {
         b.rvScroll.itemAnimator = null
         b.rvScroll.layoutManager = LinearLayoutManager(requireContext())
         b.clRecommendationLoadingLayer.setOnTouchListener { _, _ -> true }
-        b.ivRefreshButton.setOnClickListener {
-            binding.clRecommendationLoadingLayer.isVisible = true
-            onRefreshButtonClick(it)
-        }
-
+        b.clRecommendationInvisibleLayer.setOnTouchListener { _, _ -> true }
     }
 
     private val tipsMap = mapOf(
@@ -137,11 +137,41 @@ class RecommendationFragment : Fragment() {
         vm.multiViews.observe(viewLifecycleOwner) {
             recommendationAdapter.submitList(it) {
                 binding.clRecommendationLoadingLayer.isVisible = false
+                binding.clRecommendationInvisibleLayer.isVisible = false
+            }
+        }
+
+        viewModel.refreshLoading.observe(viewLifecycleOwner) { refreshLoading ->
+            // 새로고침 로딩 상태에 따라 애니메이션 표시 여부 설정
+            if (refreshLoading) {
+                // 로딩 중일 때 로딩 인디케이터를 보여줌
+                showLoadingIndicator()
+            } else {
+                // 로딩이 완료되면 로딩 인디케이터를 감춤
+                hideLoadingIndicator()
             }
         }
     }
 
-    private fun onRefreshButtonClick(view: View) {
+    private fun showLoadingIndicator() {
+        // 로딩 인디케이터를 보여줌
+        binding.slRefresh.isRefreshing = true
+    }
+
+    private fun hideLoadingIndicator() {
+        // 로딩 인디케이터를 감춤
+        binding.slRefresh.isRefreshing = false
+    }
+
+    private fun refreshColor() {
+        binding.slRefresh.setOnRefreshListener(this)
+        val colors = resources.getIntArray(R.array.google_colors)
+        binding.slRefresh.setColorSchemeColors(*colors)
+    }
+
+    override fun onRefresh() {
+        binding.clRecommendationInvisibleLayer.isVisible = true
+        // SwipeRefreshLayout로부터의 새로고침 요청 처리
         viewModel.refreshData()
     }
 
