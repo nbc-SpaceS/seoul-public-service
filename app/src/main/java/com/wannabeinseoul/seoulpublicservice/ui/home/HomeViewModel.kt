@@ -140,7 +140,9 @@ class HomeViewModel(
     // 검색 결과를 가져오는 메소드
     private suspend fun displaySearchResults(query: String) {
         // searchText 메소드를 호출하여 검색 결과를 가져옴
-        _displaySearchResult.postValue(reservationRepository.searchText(query))
+        val answer = reservationRepository.searchText(query)
+        if(answer.isEmpty()) _displaySearchResult.postValue(emptyList())
+        else _displaySearchResult.postValue(answer)
     }
 
     // 검색어 목록 불러오기
