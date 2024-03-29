@@ -165,14 +165,14 @@ class HomeFragment : Fragment() {
                         tvHomeEmptyDescription.isVisible = false
                         rvSearchResults.visibility = View.VISIBLE
 
-                        // 키보드 숨기기
-                        hideKeyboard()
+                    // 키보드 숨기기
+                    hideKeyboard()
 
-                        // et_search 포커스 제거
-                        etSearch.clearFocus()
+                    // et_search 포커스 제거
+                    etSearch.clearFocus()
 
-                        // 클릭된 결과 아이템의 SVCID를 상세 페이지에 전달
-                        searchClick(adapter)
+                    // 클릭된 결과 아이템의 SVCID를 상세 페이지에 전달
+                    searchClick(adapter)
                     } else {
                         clSearchResults.isVisible = true
                         tvHomeEmptyDescription.isVisible = true
