@@ -82,11 +82,6 @@ class HomeFragment : Fragment() {
         setupUIComponents()
     }
 
-    override fun onPause() {
-
-        super.onPause()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -163,7 +158,6 @@ class HomeFragment : Fragment() {
                         // 검색 결과를 표시하는 RecyclerView를 보이게 함
                         clSearchResults.isVisible = true
                         tvHomeEmptyDescription.isVisible = false
-                        rvSearchResults.visibility = View.VISIBLE
 
                     // 키보드 숨기기
                     hideKeyboard()
@@ -176,7 +170,6 @@ class HomeFragment : Fragment() {
                     } else {
                         clSearchResults.isVisible = true
                         tvHomeEmptyDescription.isVisible = true
-                        rvSearchResults.visibility = View.INVISIBLE
 
                         // 키보드 숨기기
                         hideKeyboard()
@@ -333,7 +326,6 @@ class HomeFragment : Fragment() {
                         binding.tabLayout.visibility = View.VISIBLE
                         binding.clSearchResults.isVisible = false
                         binding.tvHomeEmptyDescription.isVisible = false
-                        binding.rvSearchResults.visibility = View.GONE
                     } else if (backPressedOnce) {
                         isEnabled = false
                         requireActivity().finish()
@@ -626,6 +618,6 @@ class HomeFragment : Fragment() {
         super.onResume()
         homeViewModel.loadRecentData()
         binding.etSearch.setText("")
-        binding.rvSearchResults.isVisible = false
+        binding.clSearchResults.isVisible = false
     }
 }
