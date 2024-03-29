@@ -155,27 +155,6 @@ class HomeFragment : Fragment() {
                     if (searchResult.isNotEmpty()) searchResult
                     else emptyList()
                     )
-//                    if (searchResult.isNotEmpty()) {
-                        // 검색 결과를 HomeSearchAdapter에 전달하여 RecyclerView에 표시
-//                        val adapter = HomeSearchAdapter(searchResult)
-//                        rvSearchResults.adapter = adapter
-//                        rvSearchResults.layoutManager = LinearLayoutManager(requireContext())
-//
-//                        // 검색을 수행할 때 cl_home_region_list를 숨김
-//                        clHomeRegionList.isVisible = false
-//
-//                        // 검색 결과를 표시하는 RecyclerView를 보이게 함
-//                        rvSearchResults.visibility = View.VISIBLE
-//
-//                        // 키보드 숨기기
-//                        hideKeyboard()
-//
-//                        // et_search 포커스 제거
-//                        etSearch.clearFocus()
-//
-//                        // 클릭된 결과 아이템의 SVCID를 상세 페이지에 전달
-//                        searchClick(adapter)
-//                    }
                     rvSearchResults.adapter = adapter
                     rvSearchResults.layoutManager = LinearLayoutManager(requireContext())
 
