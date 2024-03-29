@@ -56,7 +56,7 @@ class LoadAndUpdateSeoulDataUseCase(
             val savedTime = it.toLongOrNull() ?: return@also Unit
                 .apply { Log.w(JJTAG, "toLong failed: ${it.take(255)}") }
             val timeDiff = System.currentTimeMillis() - savedTime
-            isOld = timeDiff > 180_000L
+            isOld = timeDiff > 10800_000L
             DLog.d(JJTAG, "timeDiff: $timeDiff")
         }
 
