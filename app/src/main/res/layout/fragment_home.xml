@@ -271,17 +271,43 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_search_results"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_search_results"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
         android:background="@color/total_background"
-        android:visibility="invisible"
+        android:visibility="gone"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_search" />
+        app:layout_constraintTop_toBottomOf="@+id/layout_search">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_search_results"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/total_background"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_home_empty_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:text="@string/fragment_category_tv_reservation_empty"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/cl_search_results"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
         android:id="@+id/view_control_rv_search_results"
