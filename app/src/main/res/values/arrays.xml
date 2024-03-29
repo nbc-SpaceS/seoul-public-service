@@ -3,11 +3,10 @@
 
     <integer-array name="google_colors">
         <item>@color/point_color</item>
-        <item>@color/pay</item>
+        <item>@color/marker4_solid</item>
         <item>@color/purple_200</item>
         <item>@color/teal_200</item>
         <item>@color/marker5_solid</item>
-        <item>@color/marker4_solid</item>
         <item>@color/clicked_marker_solid</item>
 
 
