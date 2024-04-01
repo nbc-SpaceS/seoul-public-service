@@ -26,6 +26,9 @@ class MainViewModel: ViewModel() {
     private val _selectRegion: MutableLiveData<String> = MutableLiveData()
     val selectRegion: LiveData<String> get() = _selectRegion
 
+    private val _moveSelectRegions: MutableLiveData<Boolean> = MutableLiveData()
+    val moveSelectRegions: LiveData<Boolean> get() = _moveSelectRegions
+
     fun setFilterState(flag: Boolean) {
         _applyFilter.value = flag
     }
@@ -52,5 +55,9 @@ class MainViewModel: ViewModel() {
 
     fun setRegion(region: String) {
         _selectRegion.value = region
+    }
+
+    fun moveSelectRegions(flag: Boolean) {
+        _moveSelectRegions.value = flag
     }
 }

@@ -23,7 +23,7 @@ class MedicalFragment : Fragment() {
     private val regionPrefRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.regionPrefRepository }
     private val dbMemoryRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.dbMemoryRepository }
     private val mainViewModel: MainViewModel by activityViewModels()
-    private val adapter by lazy { ItemAdapter(regionPrefRepository, "진료복지") }
+    private val adapter by lazy { ItemAdapter(regionPrefRepository, "진료복지") { mainViewModel.moveSelectRegions(it) } }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment

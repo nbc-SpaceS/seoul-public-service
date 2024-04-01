@@ -23,7 +23,7 @@ class CultureEventFragment : Fragment() {
     private val regionPrefRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.regionPrefRepository }
     private val dbMemoryRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.dbMemoryRepository }
     private val mainViewModel: MainViewModel by activityViewModels()
-    private val adapter by lazy { ItemAdapter(regionPrefRepository, "문화체험") }
+    private val adapter by lazy { ItemAdapter(regionPrefRepository, "문화체험") { mainViewModel.moveSelectRegions(it) } }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
