@@ -99,6 +99,13 @@ class HomeFragment : Fragment() {
             }
         }
 
+        mainViewModel.moveSelectRegions.observe(viewLifecycleOwner) {
+            if (it) {
+                val intent = Intent(context, InterestRegionSelectActivity::class.java)
+                resultLauncher.launch(intent)
+            }
+        }
+
         // HomeViewModel의 LiveData를 관찰하여 UI를 업데이트
         with(homeViewModel) {
             updateSelectedRegions.observe(viewLifecycleOwner) { selectedRegions ->

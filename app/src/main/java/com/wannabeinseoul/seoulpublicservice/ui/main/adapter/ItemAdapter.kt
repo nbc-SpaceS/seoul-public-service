@@ -17,7 +17,8 @@ import com.wannabeinseoul.seoulpublicservice.ui.category.CategoryActivity
 
 class ItemAdapter(
     private val regionPrefRepository: RegionPrefRepository,
-    private val maxClass: String
+    private val maxClass: String,
+    private val moveReselect: (Boolean) -> Unit
 ) : ListAdapter<Item, ItemAdapter.ItemViewHolder>(object : DiffUtil.ItemCallback<Item>() {
     override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
         return oldItem.name == newItem.name
@@ -30,7 +31,7 @@ class ItemAdapter(
 }) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val binding = ItemHomeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ItemViewHolder(binding)
+        return ItemViewHolder(binding, moveReselect)
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
@@ -41,7 +42,7 @@ class ItemAdapter(
         return currentList.size
     }
 
-    inner class ItemViewHolder(val binding: ItemHomeBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ItemViewHolder(val binding: ItemHomeBinding, private val moveReselect: (Boolean) -> Unit) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Item) = with(binding) {
             ivIcon.setImageResource(item.icon)
             tvName.text = item.name
@@ -60,6 +61,7 @@ class ItemAdapter(
                 itemView.setOnClickListener {
                     if (regionPrefRepository.loadSelectedRegion() == "지역선택") {
                         Toast.makeText(it.context, "관심지역을 먼저 선택해주세요.", Toast.LENGTH_SHORT).show()
+                        moveReselect(true)
                     } else {
                         // 아이콘의 배경색과 색상을 변경
                         setClickedIconColor()
