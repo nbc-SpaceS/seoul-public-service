@@ -339,7 +339,7 @@ class HomeViewModel(
                         h = 5
                     }
                     DLog.i("This is HomeViewModel", "m : $m\nh : $h")
-                    val localDate = "$y$m$d"
+                    val localDate = "$y$m${String.format("%02d", d)}"
                     val localTime = "${String.format("%02d", h)}10"
                     DLog.i(
                         "This is HomeViewModel",
