@@ -12,11 +12,9 @@ import androidx.fragment.app.viewModels
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentMyPageBinding
+
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 private const val JJTAG = "jj-마이페이지 프래그먼트"
 
@@ -56,8 +54,7 @@ class MyPageFragment : Fragment() {
             MyPageAdapter.MultiView.Saved(
                 myPageSavedAdapter,
                 viewModel.savedList,
-            ),
-            MyPageAdapter.MultiView.ReviewedHeader
+            )
         )
     }
 
@@ -67,41 +64,6 @@ class MyPageFragment : Fragment() {
             onClearClick = ::basicDialog,
             onReviewedClick = showDetailFragment,
         )
-//            .apply {
-////                val rows = app.rowList
-////                if (rows.isEmpty()) {
-////                    var a = 0
-////                    submitList(
-////                        fixedItems + listOf(
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "가가구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "나나구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "다다구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "가가구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "나나구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "다다구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "가가구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "나나구")),
-////                            MyPageAdapter.MultiView
-////                                .Reviewed(Row.new(svcnm = "${++a} 번째 제목~~", areanm = "다다구")),
-////                        )
-////                    )
-////                } else {
-////                    val random = Random
-////                    submitList(fixedItems + List(9) {
-////                        MyPageAdapter.MultiView.Reviewed(rows[random.nextInt(rows.size)])
-////                    })
-////                }
-//
-//                submitList(fixedItems)
-//            }
     }
 
     override fun onCreateView(
@@ -134,30 +96,8 @@ class MyPageFragment : Fragment() {
                 "옵저버:savedPrefRepository.savedSvcidListLiveData ${it.toString().take(255)}"
             )
             vm.loadSavedList(it)
+            myPageAdapter.submitList(fixedItems)
         }
-        vm.reviewedList.observe(viewLifecycleOwner) { reviewedDataList ->
-            Log.d(JJTAG, "옵저버:reviewedList ${reviewedDataList.toString().take(255)}")
-            myPageAdapter.submitList(fixedItems +
-                    if (reviewedDataList.isEmpty()) listOf(MyPageAdapter.MultiView.ReviewedNothing)
-                    else reviewedDataList.map { MyPageAdapter.MultiView.Reviewed(it) }
-            )
-        }
-
-        mainViewModel.refreshReviewListState.observe(viewLifecycleOwner) {
-            CoroutineScope(Dispatchers.IO).launch {
-                viewModel.loadReviewedList()
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        CoroutineScope(Dispatchers.IO).launch {
-            viewModel.loadReviewedList()
-        }
-
-        // 이거 왜 해놨던 거였지...? 이거 있으니까 로딩 되기 전에 저장한 서비스가 없다고 먼저 떠있음
-//        myPageAdapter.setSavedNothingVisible?.invoke(myPageSavedAdapter.itemCount == 0)
     }
 
     private fun basicDialog() = AlertDialog.Builder(requireContext()).apply {

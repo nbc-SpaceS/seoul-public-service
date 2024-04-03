@@ -14,7 +14,7 @@ class ViewPagerAdapter(fragmentActivity: FragmentActivity): FragmentStateAdapter
         HomeFragment(),
         MapFragment(),
         RecommendationFragment(),
-        MyPageFragment()
+        MyPageFragment.newInstance()
     )
 
     override fun getItemCount(): Int {

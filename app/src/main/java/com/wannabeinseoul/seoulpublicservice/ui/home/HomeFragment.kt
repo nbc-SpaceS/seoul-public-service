@@ -258,10 +258,6 @@ class HomeFragment : Fragment() {
             }
             mediatorLiveData.observe(viewLifecycleOwner) {
                 if (it.isNotEmpty()) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        homeViewModel.setWeatherToDB(it)
-                    }
-                    Log.d("dkj3", "${it}")
                     weatherAdapter(it)
                     binding.tvHomeWeatherForecast.isVisible = true
                     binding.tvHomeWeatherForecastDescription.isVisible = true
@@ -584,9 +580,7 @@ class HomeFragment : Fragment() {
     // 단기예보 지역 정보를 기상청 좌표로 변환한 후 API 요청
     private fun weatherDataSend(area: String) { // 단기예보
         CoroutineScope(Dispatchers.IO).launch {
-            val weatherList = homeViewModel.checkWeatherFromDB(area)
-            val updateTime = homeViewModel.getWeatherUpdateTimeFromDB(area)
-            if (weatherList == null || updateTime == null || System.currentTimeMillis() - updateTime >= 3600000) {
+
                 homeViewModel.fetchWeatherData()
                 val seoul = WeatherSeoulArea().weatherSeoulArea
                 if (WeatherData.getArea() == null || WeatherData.getArea()!! != area || WeatherData.getDate() != LocalDate.now().dayOfMonth) {
@@ -606,10 +600,6 @@ class HomeFragment : Fragment() {
                     homeViewModel.weatherShortData(Int.MAX_VALUE, Int.MAX_VALUE)
                 }
                 Log.d("dkj2", "API 통신 실행")
-            } else {
-                homeViewModel.setMediatorLiveData(weatherList)
-                Log.d("dkj1", "서버에서 데이터 가져옴")
-            }
         }
     }
 

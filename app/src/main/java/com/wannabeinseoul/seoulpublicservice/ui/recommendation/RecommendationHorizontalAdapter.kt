@@ -20,7 +20,7 @@ class RecommendationHorizontalAdapter(
             binding.tvRcPlaceName.text = item.decodedServiceName
             binding.tvRcPayType.text = item.payType.take(2)
             binding.tvRcAreaName.text = item.areaName
-            binding.tvRcReview.text = "후기 ${item.reviewCount}개"
+
             binding.root.setOnClickListener { onItemClick(item) }
         }
     }

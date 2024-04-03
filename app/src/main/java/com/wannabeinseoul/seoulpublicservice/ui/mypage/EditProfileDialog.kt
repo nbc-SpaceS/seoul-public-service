@@ -5,7 +5,6 @@ import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -25,7 +24,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -38,7 +36,6 @@ import com.wannabeinseoul.seoulpublicservice.util.toastShort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -105,9 +102,8 @@ class EditProfileDialog : DialogFragment() {
                     val progressDialog = withContext(Dispatchers.Main) {
                         showProgressDialog()
                     }
-                    val isDuplicated = async {
-                        container.userRepository.getUserId(name).isNotBlank()
-                    }.await()
+                    val isDuplicated = false
+
                     progressDialog.dismiss()
                     if (isDuplicated) {
                         withContext(Dispatchers.Main) {
@@ -116,9 +112,6 @@ class EditProfileDialog : DialogFragment() {
                         return@launch
                     }
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        container.userRepository.updateUserName(id, name)
-                    }
                     app.userName.postValue(name)
 
                     if (isNewImage) uploadProfileImage(drawable)
@@ -158,21 +151,9 @@ class EditProfileDialog : DialogFragment() {
     }
 
     private fun uploadProfileImage(newDrawable: Drawable): Job {
-        val context = requireContext()
         return CoroutineScope(Dispatchers.IO).launch {
-            val bitmap: Bitmap
-            try {
-                bitmap = newDrawable.toBitmap()
-            } catch (e: Throwable) {
-                Log.w(JJTAG, "uploadProfileImage newDrawable.toBitmap failed: $e")
-                toastShort(context, "이미지 변환에 실패했습니다")
-                return@launch
-            }
-
             // 안전장치가 필요할 것 같다
             app.userProfileImageDrawable.postValue(newDrawable)
-            val uploadedUrl = container.userProfileRepository.uploadProfileImage(id, bitmap)
-            Log.d(JJTAG, "btnEditProfileOkay uploadedUrl: $uploadedUrl")
         }
     }
 

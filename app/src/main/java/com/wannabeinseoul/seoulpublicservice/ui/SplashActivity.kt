@@ -12,9 +12,6 @@ import com.wannabeinseoul.seoulpublicservice.databinding.ActivitySplashBinding
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainActivity
 import com.wannabeinseoul.seoulpublicservice.util.DLog
 import com.wannabeinseoul.seoulpublicservice.util.toastLong
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.UUID
 
 private const val JJTAG = "jj-SplashActivity"
@@ -74,16 +71,7 @@ class SplashActivity : AppCompatActivity() {
                 reviewIdList = emptyList()
             )
             container.idPrefRepository.save(id)
-            container.userRepository.addUser(id, user)
             app.setUser(user)
-        } else {
-            try {
-                CoroutineScope(Dispatchers.IO).launch {
-                    container.userRepository.getUser(loadedId)?.let { app.setUser(it) }
-                }
-            } catch (e: Throwable) {
-                DLog.e("jj-스플래시", "userRepository.getUser 과정에서 에러. loadedId: $loadedId, e: $e")
-            }
         }
 
         container.filterPrefRepository.clearData()

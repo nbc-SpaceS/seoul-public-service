@@ -5,20 +5,6 @@ import com.wannabeinseoul.seoulpublicservice.BuildConfig
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationDatabase
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationRepository
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ComplaintRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ComplaintRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ReviewRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ReviewRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ServiceRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ServiceRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserBanRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserBanRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserProfileRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserProfileRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.WeatherDBRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.WeatherDBRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.db_by_memory.DbMemoryRepository
 import com.wannabeinseoul.seoulpublicservice.db_by_memory.DbMemoryRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.kma.midLandFcst.MidLandFcstApiService
@@ -50,22 +36,15 @@ import com.wannabeinseoul.seoulpublicservice.pref.SearchPrefRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.seoul.SeoulApiService
 import com.wannabeinseoul.seoulpublicservice.seoul.SeoulPublicRepository
 import com.wannabeinseoul.seoulpublicservice.seoul.SeoulPublicRepositoryImpl
-import com.wannabeinseoul.seoulpublicservice.usecase.CheckComplaintSelfUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.CheckCredentialsUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.ComplaintUserUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.DeleteReviewUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.FilterServiceDataOnMapUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.GetDetailSeoulUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.GetReviewListUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.GetSavedServiceUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.LoadAndUpdateSeoulDataUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.LoadSavedFilterOptionsUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.MappingDetailInfoWindowUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.ReviseReviewUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.SaveFilterOptionsUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.SaveServiceUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.SearchServiceDataOnMapUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.UploadReviewUseCase
 import com.wannabeinseoul.seoulpublicservice.weather.WeatherApiService
 import com.wannabeinseoul.seoulpublicservice.weather.WeatherShortRepository
 import com.wannabeinseoul.seoulpublicservice.weather.WeatherShortRepositoryImpl
@@ -84,17 +63,9 @@ interface AppContainer {
     val saveServiceUseCase: SaveServiceUseCase
     val mappingDetailInfoWindowUseCase: MappingDetailInfoWindowUseCase
     val getSavedServiceUseCase: GetSavedServiceUseCase
-    val complaintUserUseCase: ComplaintUserUseCase
     val saveFilterOptionsUseCase: SaveFilterOptionsUseCase
-    val uploadReviewUseCase: UploadReviewUseCase
-    val getReviewListUseCase: GetReviewListUseCase
-    val reviseReviewUseCase: ReviseReviewUseCase
-    val checkCredentialsUseCase: CheckCredentialsUseCase
-    val checkComplaintSelfUseCase: CheckComplaintSelfUseCase
     val searchServiceDataOnMapUseCase: SearchServiceDataOnMapUseCase
-    val deleteReviewUseCase: DeleteReviewUseCase
     val loadAndUpdateSeoulDataUseCase: LoadAndUpdateSeoulDataUseCase
-
     val prefRepository: PrefRepository
     val rowPrefRepository: RowPrefRepository
     val regionPrefRepository: RegionPrefRepository
@@ -106,17 +77,10 @@ interface AppContainer {
     val searchPrefRepository: SearchPrefRepository
     val categoryPrefRepository: CategoryPrefRepository
     val recommendPrefRepository: RecommendPrefRepository
-    val userProfileRepository: UserProfileRepository
-    val userRepository: UserRepository
-    val serviceRepository: ServiceRepository
-    val reviewRepository: ReviewRepository
-    val complaintRepository: ComplaintRepository
-    val userBanRepository: UserBanRepository
     val recentPrefRepository: RecentPrefRepository
     val weatherShortRepository: WeatherShortRepository
     val kmaRepository: KmaRepository
     val tempRepository: TempRepository
-    val weatherDBRepository: WeatherDBRepository
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -182,10 +146,6 @@ class DefaultAppContainer(context: Context) : AppContainer {
         TempRepositoryImpl(retrofitTempService)
     }
 
-    override val weatherDBRepository: WeatherDBRepository by lazy {
-        WeatherDBRepositoryImpl()
-    }
-
     /** ======== UseCase ======== **/
 
     override val getDetailSeoulUseCase by lazy {
@@ -226,53 +186,9 @@ class DefaultAppContainer(context: Context) : AppContainer {
         )
     }
 
-    override val complaintUserUseCase by lazy {
-        ComplaintUserUseCase(
-            reviewRepository = reviewRepository,
-            complaintRepository = complaintRepository
-        )
-    }
-
     override val saveFilterOptionsUseCase by lazy {
         SaveFilterOptionsUseCase(
             filterPrefRepository = filterPrefRepository
-        )
-    }
-
-    override val uploadReviewUseCase by lazy {
-        UploadReviewUseCase(
-            idPrefRepository = idPrefRepository,
-            reviewRepository = reviewRepository,
-            userRepository = userRepository,
-            serviceRepository = serviceRepository
-        )
-    }
-
-    override val getReviewListUseCase by lazy {
-        GetReviewListUseCase(
-            idPrefRepository = idPrefRepository,
-            serviceRepository = serviceRepository,
-            userBanRepository = userBanRepository
-        )
-    }
-
-    override val reviseReviewUseCase by lazy {
-        ReviseReviewUseCase(
-            reviewRepository = reviewRepository
-        )
-    }
-
-    override val checkCredentialsUseCase by lazy {
-        CheckCredentialsUseCase(
-            idPrefRepository = idPrefRepository,
-            reviewRepository = reviewRepository
-        )
-    }
-
-    override val checkComplaintSelfUseCase by lazy {
-        CheckComplaintSelfUseCase(
-            idPrefRepository = idPrefRepository,
-            userRepository = userRepository
         )
     }
 
@@ -280,15 +196,6 @@ class DefaultAppContainer(context: Context) : AppContainer {
         SearchServiceDataOnMapUseCase(
             reservationRepository = reservationRepository,
             dbMemoryRepository = dbMemoryRepository
-        )
-    }
-
-    override val deleteReviewUseCase by lazy {
-        DeleteReviewUseCase(
-            reviewRepository = reviewRepository,
-            serviceRepository = serviceRepository,
-            userRepository = userRepository,
-            idPrefRepository = idPrefRepository
         )
     }
 
@@ -349,30 +256,6 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     override val recommendPrefRepository: RecommendPrefRepository by lazy {
         RecommendPrefRepositoryImpl(context)
-    }
-
-    override val userProfileRepository: UserProfileRepository by lazy {
-        UserProfileRepositoryImpl(userRepository)
-    }
-
-    override val userRepository: UserRepository by lazy {
-        UserRepositoryImpl()
-    }
-
-    override val serviceRepository: ServiceRepository by lazy {
-        ServiceRepositoryImpl()
-    }
-
-    override val reviewRepository: ReviewRepository by lazy {
-        ReviewRepositoryImpl()
-    }
-
-    override val complaintRepository: ComplaintRepository by lazy {
-        ComplaintRepositoryImpl()
-    }
-
-    override val userBanRepository: UserBanRepository by lazy {
-        UserBanRepositoryImpl()
     }
 
     override val recentPrefRepository: RecentPrefRepository by lazy {
