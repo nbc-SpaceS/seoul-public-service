@@ -9,8 +9,8 @@ class MainViewModel: ViewModel() {
     private var _selectedServiceId: String = ""
     val selectedServiceId: String get() = _selectedServiceId
 
-    private var _userName: String = ""
-    val userName: String get() = _userName
+    private var _userName: MutableLiveData<String> = MutableLiveData()
+    val userName: LiveData<String> get() = _userName
 
     private val _applyFilter: MutableLiveData<Boolean> = MutableLiveData()
     val applyFilter: LiveData<Boolean> get() = _applyFilter
@@ -20,6 +20,9 @@ class MainViewModel: ViewModel() {
 
     private val _moveSelectRegions: MutableLiveData<Boolean> = MutableLiveData()
     val moveSelectRegions: LiveData<Boolean> get() = _moveSelectRegions
+
+    private val _applySynchronization: MutableLiveData<List<String>> = MutableLiveData()
+    val applySynchronization: LiveData<List<String>> get() = _applySynchronization
 
     fun setFilterState(flag: Boolean) {
         _applyFilter.value = flag
@@ -38,6 +41,11 @@ class MainViewModel: ViewModel() {
     }
 
     fun setUserName(name: String) {
-        _userName = name
+        _userName.postValue(name)
+    }
+
+    fun synchronizeData(name: String, list: List<String>) {
+        _userName.value = name
+        _applySynchronization.value = list
     }
 }

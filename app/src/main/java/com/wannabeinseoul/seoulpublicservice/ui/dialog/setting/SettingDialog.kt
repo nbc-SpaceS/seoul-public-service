@@ -2,13 +2,16 @@ package com.wannabeinseoul.seoulpublicservice.ui.dialog.setting
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -55,7 +58,7 @@ class SettingDialog: DialogFragment() {
             btnSettingSynchronizationUpload.isEnabled = false
             clSettingSynchronizationKey.isVisible = false
             binding.pbSettingLoading.visibility = View.VISIBLE
-            viewModel.storeDataToServer(mainViewModel.userName)
+            viewModel.storeDataToServer()
         }
 
         clSettingSynchronizationKey.setOnClickListener {
@@ -64,6 +67,22 @@ class SettingDialog: DialogFragment() {
             clipboardManager.setPrimaryClip(clipKeyText)
 
             Toast.makeText(requireContext(), "동기화 키가 클립보드에 저장되었습니다.", Toast.LENGTH_SHORT).show()
+        }
+
+        btnSettingSynchronizationDownload.setOnClickListener {
+            if (etSettingSynchronizationKey.text.isNotEmpty()) {
+                viewModel.getDataFromServer(etSettingSynchronizationKey.text.toString())
+            } else {
+                Toast.makeText(requireContext(), "동기화 키를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            }
+
+            etSettingSynchronizationKey.clearFocus()
+            val inputMethodManager =
+                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(
+                binding.etSettingSynchronizationKey.windowToken,
+                0
+            )
         }
     }
 
@@ -76,6 +95,15 @@ class SettingDialog: DialogFragment() {
 
            storeKeyToPref(it)
        }
+
+        synchronizationData.observe(viewLifecycleOwner) {
+            if (it.id.isEmpty() && it.name.isEmpty()) {
+                Toast.makeText(requireContext(), "잘못된 동기화 키입니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                mainViewModel.synchronizeData(it.name, it.savedServiceList)
+                dismiss()
+            }
+        }
     }
 
     override fun onDestroyView() {

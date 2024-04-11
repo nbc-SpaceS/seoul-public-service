@@ -108,6 +108,14 @@ class MyPageFragment : Fragment() {
             vm.loadSavedList(it)
             myPageAdapter.submitList(fixedItems)
         }
+
+        mainViewModel.userName.observe(viewLifecycleOwner) {
+            app.userName.value = it
+        }
+
+        mainViewModel.applySynchronization.observe(viewLifecycleOwner) {
+            viewModel.loadSavedList(it)
+        }
     }
 
     private fun basicDialog() = AlertDialog.Builder(requireContext()).apply {

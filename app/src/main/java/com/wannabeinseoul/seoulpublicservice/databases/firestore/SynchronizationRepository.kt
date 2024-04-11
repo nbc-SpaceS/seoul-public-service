@@ -1,5 +1,6 @@
 package com.wannabeinseoul.seoulpublicservice.databases.firestore
 
+import android.util.Log
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.wannabeinseoul.seoulpublicservice.databases.entity.SynchronizationEntity
@@ -9,7 +10,7 @@ interface SynchronizationRepository {
 
     suspend fun upload(id: String, name: String, savedServiceList: List<String>): String
     suspend fun revise(key: String, id: String, name: String, savedServiceList: List<String>): String
-    fun download(key: String): SynchronizationEntity
+    suspend fun download(key: String): SynchronizationEntity
 }
 
 class SynchronizationRepositoryImpl: SynchronizationRepository {
@@ -34,7 +35,18 @@ class SynchronizationRepositoryImpl: SynchronizationRepository {
         }
     }
 
-    override fun download(key: String): SynchronizationEntity {
-        TODO("Not yet implemented")
+    override suspend fun download(key: String): SynchronizationEntity {
+        return try {
+            val result = fireStore.collection("synchronization").document(key).get().await().data
+            Log.d("dkj", "$result")
+            SynchronizationEntity(
+                result?.get("id") as? String ?: "",
+                result?.get("name") as? String ?: "",
+                result?.get("savedServiceList") as? List<String> ?: emptyList()
+            )
+        } catch (e: Exception) {
+            Log.d("dkj", "$e")
+            SynchronizationEntity.empty()
+        }
     }
 }
