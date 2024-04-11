@@ -5,6 +5,8 @@ import com.wannabeinseoul.seoulpublicservice.BuildConfig
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationDatabase
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationRepository
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationRepositoryImpl
+import com.wannabeinseoul.seoulpublicservice.databases.firestore.SynchronizationRepository
+import com.wannabeinseoul.seoulpublicservice.databases.firestore.SynchronizationRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.db_by_memory.DbMemoryRepository
 import com.wannabeinseoul.seoulpublicservice.db_by_memory.DbMemoryRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.kma.midLandFcst.MidLandFcstApiService
@@ -19,6 +21,8 @@ import com.wannabeinseoul.seoulpublicservice.pref.FilterPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.FilterPrefRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.pref.IdPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.IdPrefRepositoryImpl
+import com.wannabeinseoul.seoulpublicservice.pref.NamePrefRepository
+import com.wannabeinseoul.seoulpublicservice.pref.NamePrefRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.pref.PrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.PrefRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.pref.RecentPrefRepository
@@ -33,6 +37,8 @@ import com.wannabeinseoul.seoulpublicservice.pref.SavedPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.SavedPrefRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.pref.SearchPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.SearchPrefRepositoryImpl
+import com.wannabeinseoul.seoulpublicservice.pref.SynchronizationPrefRepository
+import com.wannabeinseoul.seoulpublicservice.pref.SynchronizationPrefRepositoryImpl
 import com.wannabeinseoul.seoulpublicservice.seoul.SeoulApiService
 import com.wannabeinseoul.seoulpublicservice.seoul.SeoulPublicRepository
 import com.wannabeinseoul.seoulpublicservice.seoul.SeoulPublicRepositoryImpl
@@ -81,6 +87,9 @@ interface AppContainer {
     val weatherShortRepository: WeatherShortRepository
     val kmaRepository: KmaRepository
     val tempRepository: TempRepository
+    val synchronizationRepository: SynchronizationRepository
+    val synchronizationPrefRepository: SynchronizationPrefRepository
+    val namePrefRepository: NamePrefRepository
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -262,4 +271,15 @@ class DefaultAppContainer(context: Context) : AppContainer {
         RecentPrefRepositoryImpl(context)
     }
 
+    override val synchronizationRepository: SynchronizationRepository by lazy {
+        SynchronizationRepositoryImpl()
+    }
+
+    override val synchronizationPrefRepository: SynchronizationPrefRepository by lazy {
+        SynchronizationPrefRepositoryImpl(context)
+    }
+
+    override val namePrefRepository: NamePrefRepository by lazy {
+        NamePrefRepositoryImpl(context)
+    }
 }

@@ -26,12 +26,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databinding.CustomProgressBinding
 import com.wannabeinseoul.seoulpublicservice.databinding.DialogEditProfileBinding
+import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
 import com.wannabeinseoul.seoulpublicservice.util.toastShort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +55,8 @@ class EditProfileDialog : DialogFragment() {
     private val app by lazy { requireActivity().application as SeoulPublicServiceApplication }
     private val container by lazy { app.container }
     private val id by lazy { container.idPrefRepository.load() }
+
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private val imm by lazy {
         requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -113,6 +117,8 @@ class EditProfileDialog : DialogFragment() {
                     }
 
                     app.userName.postValue(name)
+                    mainViewModel.setUserName(name)
+                    app.container.namePrefRepository.save(name)
 
                     if (isNewImage) uploadProfileImage(drawable)
 

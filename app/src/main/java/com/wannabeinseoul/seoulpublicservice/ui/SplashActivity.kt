@@ -71,6 +71,7 @@ class SplashActivity : AppCompatActivity() {
                 reviewIdList = emptyList()
             )
             container.idPrefRepository.save(id)
+            user.userName?.let { container.namePrefRepository.save(it) }
             app.setUser(user)
         }
 

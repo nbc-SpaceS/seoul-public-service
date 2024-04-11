@@ -89,6 +89,8 @@ dependencies {
 
     implementation("androidx.core:core-splashscreen:1.0.1")
 
+    implementation("com.google.firebase:firebase-firestore-ktx:24.10.3")
+
     //새로고침 관련 라이브러리
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

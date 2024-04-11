@@ -9,6 +9,9 @@ class MainViewModel: ViewModel() {
     private var _selectedServiceId: String = ""
     val selectedServiceId: String get() = _selectedServiceId
 
+    private var _userName: String = ""
+    val userName: String get() = _userName
+
     private val _applyFilter: MutableLiveData<Boolean> = MutableLiveData()
     val applyFilter: LiveData<Boolean> get() = _applyFilter
 
@@ -32,5 +35,9 @@ class MainViewModel: ViewModel() {
 
     fun moveSelectRegions(flag: Boolean) {
         _moveSelectRegions.value = flag
+    }
+
+    fun setUserName(name: String) {
+        _userName = name
     }
 }

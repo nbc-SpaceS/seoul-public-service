@@ -14,6 +14,7 @@ import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentMyPageBinding
 
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
+import com.wannabeinseoul.seoulpublicservice.ui.dialog.setting.SettingDialog
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
 
 private const val JJTAG = "jj-마이페이지 프래그먼트"
@@ -34,6 +35,11 @@ class MyPageFragment : Fragment() {
     private val showDetailFragment = { svcid: String ->
         DetailFragment.newInstance(svcid)
             .show(requireActivity().supportFragmentManager, "Detail")
+    }
+
+    private val showSettingDialog = {
+        SettingDialog.newInstance()
+            .show(requireActivity().supportFragmentManager, "Setting")
     }
 
     private val myPageSavedAdapter by lazy {
@@ -63,6 +69,7 @@ class MyPageFragment : Fragment() {
             lifecycleOwner = viewLifecycleOwner,
             onClearClick = ::basicDialog,
             onReviewedClick = showDetailFragment,
+            onSettingClick = showSettingDialog
         )
     }
 
@@ -86,6 +93,9 @@ class MyPageFragment : Fragment() {
     }
 
     private fun initView() = binding.let { b ->
+        val curName = app.container.namePrefRepository.load()
+        app.userName.value = curName
+        mainViewModel.setUserName(curName)
         b.rvMyPage.adapter = myPageAdapter
     }
 
@@ -109,4 +119,8 @@ class MyPageFragment : Fragment() {
         setPositiveButton("확인") { _, _ -> viewModel.clearSavedList() }
     }.show()
 
+    override fun onResume() {
+        super.onResume()
+        Log.d("KDJS", "dd")
+    }
 }
