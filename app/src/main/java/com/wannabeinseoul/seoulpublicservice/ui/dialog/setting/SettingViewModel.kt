@@ -57,12 +57,13 @@ class SettingViewModel(
 
     fun getDataFromServer(key: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            storeKeyToPref(key)
             val data = synchronizationRepository.download(key)
             if (data.id.isNotEmpty() && data.name.isNotEmpty()) {
                 idPrefRepository.save(data.id)
                 namePrefRepository.save(data.name)
                 savedPrefRepository.setSvcidList(data.savedServiceList)
+
+                storeKeyToPref(key)
             }
 
             _synchronizationData.postValue(data)

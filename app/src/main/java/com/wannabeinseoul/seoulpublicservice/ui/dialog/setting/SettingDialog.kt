@@ -19,6 +19,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.wannabeinseoul.seoulpublicservice.databinding.DialogSettingBinding
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
+import com.wannabeinseoul.seoulpublicservice.util.OnSingleClickListener
 
 class SettingDialog: DialogFragment() {
 
@@ -72,6 +73,8 @@ class SettingDialog: DialogFragment() {
         btnSettingSynchronizationDownload.setOnClickListener {
             if (etSettingSynchronizationKey.text.isNotEmpty()) {
                 viewModel.getDataFromServer(etSettingSynchronizationKey.text.toString())
+                btnSettingSynchronizationDownload.isEnabled = false
+                binding.pbSettingLoading.visibility = View.VISIBLE
             } else {
                 Toast.makeText(requireContext(), "동기화 키를 입력해주세요.", Toast.LENGTH_SHORT).show()
             }
@@ -99,11 +102,19 @@ class SettingDialog: DialogFragment() {
         synchronizationData.observe(viewLifecycleOwner) {
             if (it.id.isEmpty() && it.name.isEmpty()) {
                 Toast.makeText(requireContext(), "잘못된 동기화 키입니다.", Toast.LENGTH_SHORT).show()
+                binding.btnSettingSynchronizationDownload.isEnabled = true
+                binding.pbSettingLoading.visibility = View.INVISIBLE
             } else {
                 mainViewModel.synchronizeData(it.name, it.savedServiceList)
                 dismiss()
             }
         }
+    }
+
+    fun View.setOnSingleClickListener(
+        onClickListener: (view: View) -> Unit
+    ) {
+        setOnClickListener(OnSingleClickListener(onClickListener))
     }
 
     override fun onDestroyView() {
