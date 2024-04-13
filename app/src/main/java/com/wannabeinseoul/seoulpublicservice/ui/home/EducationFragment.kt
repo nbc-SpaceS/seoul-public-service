@@ -62,10 +62,17 @@ class EducationFragment : Fragment() {
                     ).size
                     item.copy(count = size)
                 }
-
-                binding.clEducationNothing.isVisible = educationItems.all { it.count == 0 }
-                adapter.submitList(educationItems)
+            } else {
+                educationItems = educationItems.map { item ->
+                    val size = dbMemoryRepository.getFiltered(
+                        minclassnm = listOf(item.name)
+                    ).size
+                    item.copy(count = size)
+                }
             }
+
+            binding.clEducationNothing.isVisible = educationItems.all { it.count == 0 }
+            adapter.submitList(educationItems)
         }
     }
 }

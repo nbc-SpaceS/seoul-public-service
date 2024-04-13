@@ -111,13 +111,14 @@ class HomeViewModel(
             }
 
             else -> {
+                regionPrefRepository.saveSelectedRegion(0)
                 _updateSelectedRegions.value = emptyList()
             }
         }
     }
 
     // 검색어를 이용하여 검색을 수행하는 메소드
-    fun performSearch(query: String) {
+    fun performSearch(region: String, query: String) {
         // 검색어가 비어있지 않을 때만 검색어가 저장됨
         if (query.isNotEmpty()) {
             saveSearchQuery(query)
@@ -125,7 +126,7 @@ class HomeViewModel(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            displaySearchResults(query)
+            displaySearchResults(region, query)
         }
     }
 
@@ -136,11 +137,19 @@ class HomeViewModel(
     }
 
     // 검색 결과를 가져오는 메소드
-    private suspend fun displaySearchResults(query: String) {
+    private suspend fun displaySearchResults(region: String, query: String) {
         // searchText 메소드를 호출하여 검색 결과를 가져옴
         val answer = reservationRepository.searchText(query)
-        if(answer.isEmpty()) _displaySearchResult.postValue(emptyList())
-        else _displaySearchResult.postValue(answer)
+
+        if (answer.isEmpty()) {
+            _displaySearchResult.postValue(emptyList())
+        } else {
+            if (region != "지역선택") {
+                _displaySearchResult.postValue(answer.filter { it.AREANM == region })
+            } else {
+                _displaySearchResult.postValue(answer)
+            }
+        }
     }
 
     // 검색어 목록 불러오기

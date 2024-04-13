@@ -1,10 +1,12 @@
 package com.wannabeinseoul.seoulpublicservice.ui.interestregionselect
 
+import android.graphics.Paint
 import android.os.Bundle
 import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.wannabeinseoul.seoulpublicservice.databinding.ActivityInterestRegionSelectBinding
 
 
@@ -72,12 +74,22 @@ class InterestRegionSelectActivity : AppCompatActivity() {
     private fun initView() = with(binding) {
         viewModel.loadRegion()
 
+        tvInterestResetRegions.paintFlags = Paint.UNDERLINE_TEXT_FLAG
+        tvInterestResetRegions.isVisible = viewModel.checkList()
+
         ivInterestRegionSelectBackBtn.setOnClickListener {
-            setResult(RESULT_OK)
+
             finish()
         }
 
         btnInterestRegionSelectOkay.setOnClickListener {
+            viewModel.saveRegion()
+            setResult(RESULT_OK)
+            finish()
+        }
+
+        tvInterestResetRegions.setOnClickListener {
+            viewModel.resetRegions()
             viewModel.saveRegion()
             setResult(RESULT_OK)
             finish()

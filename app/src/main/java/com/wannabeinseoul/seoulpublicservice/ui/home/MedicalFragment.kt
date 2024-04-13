@@ -54,10 +54,17 @@ class MedicalFragment : Fragment() {
                     ).size
                     item.copy(count = size)
                 }
-
-                binding.clMedicalNothing.isVisible = medicalItems.all { it.count == 0 }
-                adapter.submitList(medicalItems)
+            } else {
+                medicalItems = medicalItems.map { item ->
+                    val size = dbMemoryRepository.getFiltered(
+                        minclassnm = if (item.name == "병원") listOf("서북병원") else listOf(item.name)
+                    ).size
+                    item.copy(count = size)
+                }
             }
+
+            binding.clMedicalNothing.isVisible = medicalItems.all { it.count == 0 }
+            adapter.submitList(medicalItems)
         }
     }
 }

@@ -23,9 +23,18 @@ class FacilityFragment : Fragment() {
     private val regionPrefRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.regionPrefRepository }
     private val dbMemoryRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.dbMemoryRepository }
     private val mainViewModel: MainViewModel by activityViewModels()
-    private val adapter by lazy { ItemAdapter(regionPrefRepository, "체육시설") { mainViewModel.moveSelectRegions(it) } }
+    private val adapter by lazy {
+        ItemAdapter(
+            regionPrefRepository,
+            "체육시설"
+        ) { mainViewModel.moveSelectRegions(it) }
+    }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentFacilityBinding.inflate(inflater, container, false)
         return binding.root
@@ -55,15 +64,23 @@ class FacilityFragment : Fragment() {
         adapter.submitList(facilityItems)
 
         mainViewModel.selectRegion.observe(viewLifecycleOwner) { region ->
-            if (region != "지역선택") {
-                facilityItems = facilityItems.map { item ->
-                    val size = dbMemoryRepository.getFiltered(areanm = listOf(region.toString()), minclassnm = listOf(item.name)).size
+            facilityItems = if (region != "지역선택") {
+                facilityItems.map { item ->
+                    val size = dbMemoryRepository.getFiltered(
+                        areanm = listOf(region.toString()),
+                        minclassnm = listOf(item.name)
+                    ).size
                     item.copy(count = size)
                 }
-
-                binding.clFacilityNothing.isVisible = facilityItems.all { it.count == 0 }
-                adapter.submitList(facilityItems)
+            } else {
+                facilityItems.map { item ->
+                    val size = dbMemoryRepository.getFiltered(minclassnm = listOf(item.name)).size
+                    item.copy(count = size)
+                }
             }
+
+            binding.clFacilityNothing.isVisible = facilityItems.all { it.count == 0 }
+            adapter.submitList(facilityItems)
         }
     }
 

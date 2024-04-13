@@ -59,32 +59,58 @@ class ItemAdapter(
                 // 리스트가 비어있지 않을 때 아이템의 배경과 이미지 색을 원래대로 복원하고 클릭 가능하게 설정
                 setIconColor()
                 itemView.setOnClickListener {
-                    if (regionPrefRepository.loadSelectedRegion() == "지역선택") {
-                        Toast.makeText(it.context, "관심지역을 먼저 선택해주세요.", Toast.LENGTH_SHORT).show()
-                        moveReselect(true)
-                    } else {
-                        // 아이콘의 배경색과 색상을 변경
-                        setClickedIconColor()
-                        // 선택된 항목의 데이터와 지역을 가지고 카테고리 페이지로 이동
-                        val intent = Intent(it.context, CategoryActivity::class.java).apply {
-                            if (item.name == "병원") {
-                                putExtra("category", "서북병원")
-                            } else {
-                                putExtra("category", item.name)
-                            }
-
-                            putExtra("region", regionPrefRepository.loadSelectedRegion())
+                    // 아이콘의 배경색과 색상을 변경
+                    setClickedIconColor()
+                    // 선택된 항목의 데이터와 지역을 가지고 카테고리 페이지로 이동
+                    val intent = Intent(it.context, CategoryActivity::class.java).apply {
+                        if (item.name == "병원") {
+                            putExtra("category", "서북병원")
+                        } else {
+                            putExtra("category", item.name)
                         }
-                        Log.d(
-                            "ItemAdapter",
-                            "Moving to CategoryActivity with category: ${item.name}, region: ${regionPrefRepository.loadSelectedRegion()}"
-                        )
-                        it.context.startActivity(intent)
-                        // 일정 시간 후에 아이콘의 배경색과 색상을 원래대로 복원
-                        itemView.postDelayed({
-                            setIconColor()
-                        }, 500)
+
+                        val region = regionPrefRepository.loadSelectedRegion()
+                        if (region == "지역선택") {
+                            putExtra("region", "")
+                        } else {
+                            putExtra("region", region)
+                        }
                     }
+                    Log.d(
+                        "ItemAdapter",
+                        "Moving to CategoryActivity with category: ${item.name}, region: ${regionPrefRepository.loadSelectedRegion()}"
+                    )
+                    it.context.startActivity(intent)
+                    // 일정 시간 후에 아이콘의 배경색과 색상을 원래대로 복원
+                    itemView.postDelayed({
+                        setIconColor()
+                    }, 500)
+//                    if (regionPrefRepository.loadSelectedRegion() == "지역선택") {
+//                        Toast.makeText(it.context, "관심지역을 먼저 선택해주세요.", Toast.LENGTH_SHORT).show()
+//                        moveReselect(true)
+//                    } else {
+//                        // 아이콘의 배경색과 색상을 변경
+//                        setClickedIconColor()
+//                        // 선택된 항목의 데이터와 지역을 가지고 카테고리 페이지로 이동
+//                        val intent = Intent(it.context, CategoryActivity::class.java).apply {
+//                            if (item.name == "병원") {
+//                                putExtra("category", "서북병원")
+//                            } else {
+//                                putExtra("category", item.name)
+//                            }
+//
+//                            putExtra("region", regionPrefRepository.loadSelectedRegion())
+//                        }
+//                        Log.d(
+//                            "ItemAdapter",
+//                            "Moving to CategoryActivity with category: ${item.name}, region: ${regionPrefRepository.loadSelectedRegion()}"
+//                        )
+//                        it.context.startActivity(intent)
+//                        // 일정 시간 후에 아이콘의 배경색과 색상을 원래대로 복원
+//                        itemView.postDelayed({
+//                            setIconColor()
+//                        }, 500)
+//                    }
                 }
             }
         }

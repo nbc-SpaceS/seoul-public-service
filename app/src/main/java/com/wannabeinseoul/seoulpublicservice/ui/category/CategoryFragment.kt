@@ -79,7 +79,9 @@ class CategoryFragment : Fragment() {
 
         val category =
             if (arguments?.getString("category") == "서북병원") "병원" else arguments?.getString("category")
-        binding.tvCtTitle.text = "${arguments?.getString("region")} - $category"
+
+        val region = arguments?.getString("region")
+        binding.tvCtTitle.text = if (region == "") "전체 - $category" else "$region - $category"
         viewModel.updateList(
             arguments?.getString("region") ?: "", arguments?.getString("category") ?: ""
         )
