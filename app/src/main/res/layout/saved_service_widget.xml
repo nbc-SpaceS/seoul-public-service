@@ -1,0 +1,38 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dp"
+    android:background="@drawable/background_radius_12dp"
+    android:elevation="4dp"
+    android:padding="12dp">
+
+    <ImageView
+        android:id="@+id/iv_widget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:adjustViewBounds="true"
+        android:src="@drawable/face_snowy"
+        app:layout_constraintDimensionRatio="1:1" />
+
+    <TextView
+        android:id="@+id/tv_widget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:layout_toStartOf="@id/btn_widget"
+        android:layout_toEndOf="@+id/iv_widget"
+        android:paddingHorizontal="8dp" />
+
+    <Button
+        android:id="@+id/btn_widget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="end|center_vertical"
+        android:text="앱 이동" />
+</RelativeLayout>
