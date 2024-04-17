@@ -27,6 +27,7 @@ class MyPageAdapter(
     private val lifecycleOwner: LifecycleOwner,
     private val onClearClick: () -> Unit,
     private val onReviewedClick: (svcid: String) -> Unit,
+    private val onSettingClick: () -> Unit,
 ) : ListAdapter<MyPageAdapter.MultiView, MyPageAdapter.CommonViewHolder>(
     object : DiffUtil.ItemCallback<MultiView>() {
         override fun areItemsTheSame(oldItem: MultiView, newItem: MultiView): Boolean =
@@ -108,6 +109,10 @@ class MyPageAdapter(
                 (item as MultiView.Profile)
                 b.clProfileEdit.setOnClickListener {
                     item.onEditButtonClick()
+                }
+
+                b.ivProfileSetting.setOnClickListener {
+                    onSettingClick()
                 }
 
                 b.ivProfileProfile.drawable.setTint(item.userColor)

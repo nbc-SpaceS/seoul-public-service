@@ -62,10 +62,17 @@ class FacilityRentFragment : Fragment() {
                     ).size
                     item.copy(count = size)
                 }
-
-                binding.clFacilityRentNothing.isVisible = facilityRentItems.all { it.count == 0 }
-                adapter.submitList(facilityRentItems)
+            } else {
+                facilityRentItems = facilityRentItems.map { item ->
+                    val size = dbMemoryRepository.getFiltered(
+                        minclassnm = listOf(item.name)
+                    ).size
+                    item.copy(count = size)
+                }
             }
+
+            binding.clFacilityRentNothing.isVisible = facilityRentItems.all { it.count == 0 }
+            adapter.submitList(facilityRentItems)
         }
     }
 }

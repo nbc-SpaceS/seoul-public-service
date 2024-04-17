@@ -229,4 +229,7 @@
     <string name="fragment_home_weather_forecast">일기예보</string>
     <string name="fragment_home_weather_forecast_description">오늘부터 10일 간의 날씨정보입니다.</string>
     <string name="fragment_home_recent_description">최근에 들어갔던 공공서비스는 최대 10개까지 저장됩니다.</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">This is an app widget description</string>
 </resources>

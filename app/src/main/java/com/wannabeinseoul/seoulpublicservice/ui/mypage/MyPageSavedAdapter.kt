@@ -53,7 +53,6 @@ class MyPageSavedAdapter(
                 b.tvRcPayType.text = item.payType.take(2)
                 b.tvRcAreaName.text = item.areaName
                 b.tvRcIsReservationAvailable.text = item.svcstatnm
-                b.tvRcReview.text = "후기 ${item.reviewCount}개"
 
                 b.root.setOnClickListener { onSavedClick(item.svcid) }
             }

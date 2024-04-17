@@ -9,7 +9,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ServiceRepository
 import com.wannabeinseoul.seoulpublicservice.pref.RegionPrefRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -19,7 +18,6 @@ import kotlinx.coroutines.launch
 
 class RecommendationViewModel(
     private val reservationRepository: ReservationRepository,
-    private val serviceRepository: ServiceRepository,
     private val regionPrefRepository: RegionPrefRepository,
 ) : ViewModel() {
 
@@ -102,7 +100,6 @@ class RecommendationViewModel(
 
     private suspend fun getQuery(query: String): List<RecommendationData> {
         val reservationEntities = reservationRepository.searchText(query).take(5)
-        val counts = serviceRepository.getServiceReviewsCount(reservationEntities.map { it.SVCID })
         return List(reservationEntities.size) {
             RecommendationData(
                 payType = reservationEntities[it].PAYATNM,
@@ -112,7 +109,7 @@ class RecommendationViewModel(
                 imageUrl = reservationEntities[it].IMGURL,
                 svcid = reservationEntities[it].SVCID,
                 usetgtinfo = reservationEntities[it].USETGTINFO,
-                reviewCount = counts[it],
+                reviewCount = 0,
                 serviceName = reservationEntities[it].SVCNM,
             )
         }
@@ -124,8 +121,6 @@ class RecommendationViewModel(
 
             if (searchText.size >= num) {
                 val reservationEntities = searchText.slice(num - 5 until num)
-                val counts =
-                    serviceRepository.getServiceReviewsCount(reservationEntities.map { it.SVCID })
 
                 val list = dataList.find { it.keyword == query }?.list ?: emptyList()
 
@@ -142,7 +137,7 @@ class RecommendationViewModel(
                                         imageUrl = reservationEntities[it].IMGURL,
                                         svcid = reservationEntities[it].SVCID,
                                         usetgtinfo = reservationEntities[it].USETGTINFO,
-                                        reviewCount = counts[it],
+                                        reviewCount = 0,
                                         serviceName = reservationEntities[it].SVCNM,
                                     )
                                 }
@@ -206,7 +201,6 @@ class RecommendationViewModel(
                 val container = (this[APPLICATION_KEY] as SeoulPublicServiceApplication).container
                 RecommendationViewModel(
                     reservationRepository = container.reservationRepository,
-                    serviceRepository = container.serviceRepository,
                     regionPrefRepository = container.regionPrefRepository
                 )
             }

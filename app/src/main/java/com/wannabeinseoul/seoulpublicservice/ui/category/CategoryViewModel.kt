@@ -29,7 +29,11 @@ class CategoryViewModel(
     val categories: LiveData<List<CategoryData>> get() = _categories
 
     fun updateList (areanm: String, minclassnm: String) {
-        val filteredList = dbMemoryRepository.getFiltered(areanm = listOf(areanm), minclassnm = listOf(minclassnm)).convertToCategoryDataList()
+        val filteredList = if (areanm == "") {
+            dbMemoryRepository.getFiltered(minclassnm = listOf(minclassnm)).convertToCategoryDataList()
+        } else {
+            dbMemoryRepository.getFiltered(areanm = listOf(areanm), minclassnm = listOf(minclassnm)).convertToCategoryDataList()
+        }
         _categories.value = filteredList
         //minclassnm은 소분류명
     }

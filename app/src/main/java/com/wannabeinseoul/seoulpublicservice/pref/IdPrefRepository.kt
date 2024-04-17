@@ -2,7 +2,7 @@ package com.wannabeinseoul.seoulpublicservice.pref
 
 import android.content.Context
 
-/** 관심 지역을 저장하는 Repository. */
+/** 유저 아이디를 저장하는 Repository. */
 interface IdPrefRepository {
     fun save(value: String)
     fun load(): String

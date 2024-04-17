@@ -116,11 +116,13 @@ class HomeFragment : Fragment() {
                         tvHomeSelectRegion2.isVisible = false
                         tvHomeSelectRegion3.isVisible = false
                         mdHomeRegionList.isVisible = false
+                        etSearch.hint = "전체 공공서비스 대상 검색"
                         mainViewModel.setRegion("지역선택")
                     } else {
                         tvHomeCurrentRegion.text = selectedRegions[0]
                         tvHomeSelectRegion1.setTextColor(requireContext().getColor(R.color.total_text_color))
                         mdHomeRegionList.isVisible = true
+                        etSearch.hint = "${selectedRegions[0]} 공공서비스 대상 검색"
                         mainViewModel.setRegion(selectedRegions[0])
                         when (selectedRegions.size) {
                             1 -> {
@@ -198,7 +200,7 @@ class HomeFragment : Fragment() {
                             onItemClickListener = object : SearchHistoryAdapter.OnItemClickedListener {
                                 override fun onItemClick(item: String) {
                                     etSearch.setText(item)
-                                    homeViewModel.performSearch(item)
+                                    homeViewModel.performSearch(tvHomeCurrentRegion.text.toString(), item)
                                 }
                             }
                         }
@@ -258,10 +260,6 @@ class HomeFragment : Fragment() {
             }
             mediatorLiveData.observe(viewLifecycleOwner) {
                 if (it.isNotEmpty()) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        homeViewModel.setWeatherToDB(it)
-                    }
-                    Log.d("dkj3", "${it}")
                     weatherAdapter(it)
                     binding.tvHomeWeatherForecast.isVisible = true
                     binding.tvHomeWeatherForecastDescription.isVisible = true
@@ -352,15 +350,17 @@ class HomeFragment : Fragment() {
 
     // 검색 기능 설정
     private fun setupSearch() {
+        val region = binding.tvHomeCurrentRegion.text.toString()
+
         binding.ivSearch.setOnClickListener {
             val searchText = binding.etSearch.text.toString()
-            homeViewModel.performSearch(searchText)
+            homeViewModel.performSearch(region, searchText)
         }
 
         binding.etSearch.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val searchText = v.text.toString()
-                homeViewModel.performSearch(searchText)
+                homeViewModel.performSearch(region, searchText)
 
                 // EditText의 포커스 제거
                 binding.etSearch.clearFocus()
@@ -462,9 +462,6 @@ class HomeFragment : Fragment() {
     // 지역을 다시 선택할 때, 지역 선택 화면으로 이동
     private fun reselectRegion() {
         binding.clHomeRegionList.isVisible = false
-        binding.tvHomeSelectRegion1.setTextColor(requireContext().getColor(R.color.unable_button_text))
-        binding.tvHomeSelectRegion2.setTextColor(requireContext().getColor(R.color.unable_button_text))
-        binding.tvHomeSelectRegion3.setTextColor(requireContext().getColor(R.color.unable_button_text))
         binding.ivHomeMoreBtn.setImageResource(R.drawable.ic_more)
         binding.viewControlSpinner.isVisible = false
         val intent = Intent(context, InterestRegionSelectActivity::class.java)
@@ -483,6 +480,12 @@ class HomeFragment : Fragment() {
         }
 
         binding.tvHomeCurrentRegion.text = regionView.text
+        binding.clSearchResults.isVisible = false
+        binding.etSearch.setText("")
+        binding.etSearch.hint = "${regionView.text} 공공서비스 대상 검색"
+        binding.clHomeRegionList.isVisible = false
+        binding.ivHomeMoreBtn.setImageResource(R.drawable.ic_more)
+        binding.viewControlSpinner.isVisible = false
         homeViewModel.saveSelectedRegion(index)
     }
 
@@ -584,9 +587,7 @@ class HomeFragment : Fragment() {
     // 단기예보 지역 정보를 기상청 좌표로 변환한 후 API 요청
     private fun weatherDataSend(area: String) { // 단기예보
         CoroutineScope(Dispatchers.IO).launch {
-            val weatherList = homeViewModel.checkWeatherFromDB(area)
-            val updateTime = homeViewModel.getWeatherUpdateTimeFromDB(area)
-            if (weatherList == null || updateTime == null || System.currentTimeMillis() - updateTime >= 3600000) {
+
                 homeViewModel.fetchWeatherData()
                 val seoul = WeatherSeoulArea().weatherSeoulArea
                 if (WeatherData.getArea() == null || WeatherData.getArea()!! != area || WeatherData.getDate() != LocalDate.now().dayOfMonth) {
@@ -606,10 +607,6 @@ class HomeFragment : Fragment() {
                     homeViewModel.weatherShortData(Int.MAX_VALUE, Int.MAX_VALUE)
                 }
                 Log.d("dkj2", "API 통신 실행")
-            } else {
-                homeViewModel.setMediatorLiveData(weatherList)
-                Log.d("dkj1", "서버에서 데이터 가져옴")
-            }
         }
     }
 

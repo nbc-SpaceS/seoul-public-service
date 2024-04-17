@@ -12,16 +12,9 @@ import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databases.RecentEntity
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationEntity
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ReviewRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.ServiceRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserBanRepository
-import com.wannabeinseoul.seoulpublicservice.databases.firestore.UserRepository
-import com.wannabeinseoul.seoulpublicservice.pref.IdPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.RecentPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.SavedPrefRepository
-import com.wannabeinseoul.seoulpublicservice.ui.dialog.review.ReviewItem
 import com.wannabeinseoul.seoulpublicservice.util.DLog
-import com.wannabeinseoul.seoulpublicservice.weather.WeatherShortRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -35,14 +28,8 @@ import kotlin.math.sqrt
 
 class DetailViewModel(
     private val reservationRepository: ReservationRepository,
-    private val idPrefRepository: IdPrefRepository,
-    private val reviewRepository: ReviewRepository,
-    private val userRepository: UserRepository,
-    private val serviceRepository: ServiceRepository,
     private val savedPrefRepository: SavedPrefRepository,
-    private val userBanRepository: UserBanRepository,
     private val recentPrefRepository: RecentPrefRepository,
-    private val weatherShortRepository: WeatherShortRepository
 ) : ViewModel() {
     private val _serviceData = MutableLiveData<ReservationEntity>()
     val serviceData: LiveData<ReservationEntity> get() = _serviceData
@@ -54,23 +41,14 @@ class DetailViewModel(
     private val _closeEvent = MutableLiveData<Boolean>()
     val closeEvent: LiveData<Boolean> get() = _closeEvent
 
-//    private val _myLocationCallback = MutableLiveData<Boolean>()
-//    val myLocationCallback:LiveData<Boolean> get() = _myLocationCallback
-
     private val _textState = MutableLiveData<Boolean>()
     val textState: LiveData<Boolean> get() = _textState
-
-    private val _reviewUiState: MutableLiveData<List<ReviewItem>> = MutableLiveData()
-    val reviewUiState: LiveData<List<ReviewItem>> get() = _reviewUiState
 
     private val _savedID: MutableLiveData<Boolean> = MutableLiveData()
     val savedID: LiveData<Boolean> get() = _savedID
 
     private val _favoriteChanged: MutableLiveData<Boolean> = MutableLiveData()
     val favoriteChanged: LiveData<Boolean> get() = _favoriteChanged
-
-//    private val _shortWeather: MutableLiveData<WeatherShortDTO> = MutableLiveData()
-//    val shortWeather: LiveData<WeatherShortDTO> get() = _shortWeather
 
     fun getData(svcID: String) {
         viewModelScope.launch{
@@ -86,10 +64,6 @@ class DetailViewModel(
     fun close(event: Boolean) {
         _closeEvent.value = event
     }
-
-//    fun myLocationCallbackEvent(event: Boolean) {
-//        _myLocationCallback.value = event
-//    }
 
     fun textOpened(event: Boolean) {
         _textState.value = event
@@ -109,21 +83,6 @@ class DetailViewModel(
         }
     }
 
-    fun setReviews(svcId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = serviceRepository.getServiceReviews(svcId)
-            val banList = userBanRepository.getBanList().toMutableList().apply {
-                remove(idPrefRepository.load())
-            }
-
-            _reviewUiState.postValue(data.filter { it.userId !in banList }.sortedByDescending { it.uploadTime })
-        }
-    }
-
-    fun setReviews(reviewList: List<ReviewItem>) {
-        _reviewUiState.value = reviewList
-    }
-
     companion object {
         val factory = viewModelFactory {
             initializer {
@@ -131,14 +90,8 @@ class DetailViewModel(
                 val container = application.container
                 DetailViewModel(
                     reservationRepository = container.reservationRepository,
-                    idPrefRepository = container.idPrefRepository,
-                    reviewRepository = container.reviewRepository,
-                    userRepository = container.userRepository,
-                    serviceRepository = container.serviceRepository,
                     savedPrefRepository = container.savedPrefRepository,
-                    userBanRepository = container.userBanRepository,
                     recentPrefRepository = container.recentPrefRepository,
-                    weatherShortRepository = container.weatherShortRepository
                 )
             }
         }

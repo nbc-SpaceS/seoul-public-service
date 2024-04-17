@@ -2,7 +2,6 @@ package com.wannabeinseoul.seoulpublicservice.ui.detail
 
 import android.Manifest
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,11 +17,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
-import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
 import com.naver.maps.map.overlay.Marker
@@ -32,7 +29,6 @@ import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databases.RecentEntity
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationEntity
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentDetailBinding
-import com.wannabeinseoul.seoulpublicservice.ui.dialog.review.ReviewFragment
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
 import com.wannabeinseoul.seoulpublicservice.util.loadWithHolder
 import java.time.LocalDateTime
@@ -53,13 +49,9 @@ class DetailFragment : DialogFragment(), OnMapReadyCallback {
     private var param1: String? = null
     private var textOpen = false    // 텍스트 뷰가 펼쳐져 있는지(false = 접힌 상태, true = 펼친 상태)
 
-    private lateinit var commentAdapter: DetailCommentAdapter  // 후기 ListAdapter 선언
     private lateinit var itemLocation: LatLng // 아이템 위치
 
     private var closeListener: DetailCloseInterface? = null
-
-//    private val weatherChange by lazy { WeatherXYChange() }
-//    private val localDateTime by lazy { LocalDateTimeParser() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,7 +82,6 @@ class DetailFragment : DialogFragment(), OnMapReadyCallback {
         viewModelInit()
         viewInit()
         mapView.getMapAsync(this)
-        connectToCommentList(requireContext())
     }
 
     private fun saveRecent(data: ReservationEntity) {
@@ -150,11 +141,7 @@ class DetailFragment : DialogFragment(), OnMapReadyCallback {
             i.putExtra(Intent.EXTRA_TEXT, viewModel.serviceData.value!!.SVCURL)
             startActivity(Intent.createChooser(i, "링크 공유"))
         }
-        it.tvDetailReviewMoveBtn.setOnClickListener {
-            mainViewModel.setServiceId(param1!!)
-            val bottomSheet = ReviewFragment()
-            bottomSheet.show(requireActivity().supportFragmentManager, bottomSheet.tag)
-        }
+
         keyEvent()
     }
 
@@ -163,35 +150,13 @@ class DetailFragment : DialogFragment(), OnMapReadyCallback {
             checkLatLng(data)   // itemLocation은 여기서 검사해서 반환함
             bind(data)
             saveRecent(data)
-            // 지도의 X는 경도, Y는 위도 / 기상청 변환기(x = 위도, y = 경도)
-//            val change = weatherChange.change(0, data.Y.toDouble(), data.X.toDouble())
-//            val weatherDate = "${localDateTime.year}${localDateTime.month}${localDateTime.day}"
-//            val weatherHour = "${localDateTime.hour}00"
-//            vm.getWeather(1, 3, weatherDate, weatherHour, change.first, change.second)
         }
-        vm.setReviews(param1!!)
         vm.textState.observe(viewLifecycleOwner) {
             textOpen = it
             showMore(it)
         }
         vm.closeEvent.observe(viewLifecycleOwner) { close -> if (close) dismiss() }
-        vm.reviewUiState.observe(viewLifecycleOwner) {
-            commentAdapter.submitList(it.take(5))
-            binding.tvDetailEmptyDescription.isVisible = it.isEmpty()
-            mainViewModel.setCurrentReviewList(it)
-        }
         vm.favoriteChanged.observe(viewLifecycleOwner) { favorite(it) }
-//        vm.shortWeather.observe(viewLifecycleOwner) {   // 날씨는 여기에서 !!!!!
-//            Log.i("This is DetailFragment","Items : $it\nitem type : ${it.javaClass.simpleName}")
-//        }
-
-        mainViewModel.refreshReviewListState.observe(viewLifecycleOwner) {
-            if (mainViewModel.currentReviewList.isNotEmpty()) {
-                vm.setReviews(mainViewModel.currentReviewList)
-            } else {
-                vm.setReviews(param1!!)
-            }
-        }
         vm.distanceText.observe(viewLifecycleOwner) { binding.tvDetailDistanceFromHere.text = it }
     }
 
@@ -393,15 +358,6 @@ class DetailFragment : DialogFragment(), OnMapReadyCallback {
             false -> {
                 binding.ivDetailFavorite.setImageResource(R.drawable.ic_save_empty)
             }
-        }
-    }
-
-    // 후기 어댑터 연결(임시)
-    private fun connectToCommentList(context: Context) {
-        commentAdapter = DetailCommentAdapter()
-        binding.rvDetailReview.apply {
-            adapter = commentAdapter
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
     }
 

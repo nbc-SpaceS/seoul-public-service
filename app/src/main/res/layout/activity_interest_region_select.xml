@@ -448,6 +448,18 @@
             app:layout_constraintTop_toBottomOf="@+id/cb_interest_region_select_btn21" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <TextView
+        android:id="@+id/tv_interest_reset_regions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="전체 지역으로 설정"
+        android:textColor="@color/gray"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/btn_interest_region_select_okay"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_interest_region_select_okay"
         android:layout_width="match_parent"
