@@ -58,7 +58,7 @@ class SavedPrefRepositoryImpl(context: Context) : SavedPrefRepository {
     override fun getSvcidList(): List<String> = savedSvcidListLiveData.value!!
 
     override fun setSvcidList(list: List<String>) {
-        _savedSvcidList.postValue(list)
+        _savedSvcidList.value = list
     }
 
     override fun clear() = setSvcidList(emptyList())
