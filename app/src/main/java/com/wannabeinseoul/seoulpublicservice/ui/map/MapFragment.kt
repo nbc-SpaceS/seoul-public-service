@@ -229,6 +229,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         viewModel.setServiceData()
 
         updateData.observe(viewLifecycleOwner) { list ->
+            adapter.submitList(emptyList())
             adapter.submitList(list.toList())
             binding.tvMapInfoCount.text = "1"
         }

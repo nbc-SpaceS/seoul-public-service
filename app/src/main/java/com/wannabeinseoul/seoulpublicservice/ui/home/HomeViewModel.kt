@@ -1,9 +1,14 @@
 package com.wannabeinseoul.seoulpublicservice.ui.home
 
 import android.util.Log
+import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databases.RecentEntity
 import com.wannabeinseoul.seoulpublicservice.databases.ReservationEntity
@@ -16,6 +21,7 @@ import com.wannabeinseoul.seoulpublicservice.pref.RecentPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.RegionPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.SavedPrefRepository
 import com.wannabeinseoul.seoulpublicservice.pref.SearchPrefRepository
+import com.wannabeinseoul.seoulpublicservice.service.NotificationWorker
 import com.wannabeinseoul.seoulpublicservice.util.DLog
 import com.wannabeinseoul.seoulpublicservice.weather.*
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +31,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 class HomeViewModel(
     private val regionPrefRepository: RegionPrefRepository,
@@ -71,6 +78,9 @@ class HomeViewModel(
 
     private val _mediatorLiveData: MutableLiveData<List<WeatherShort>> = MutableLiveData()
     val mediatorLiveData: LiveData<List<WeatherShort>> get() = _mediatorLiveData
+
+    private var _repeatWork: MutableLiveData<Boolean> = MutableLiveData()
+    val repeatWork: LiveData<Boolean> get() = _repeatWork
 
     // 검색 결과를 지우는 메소드
     fun clearSearchResult() {
@@ -164,69 +174,16 @@ class HomeViewModel(
         regionPrefRepository.saveSelectedRegion(index)
     }
 
-    // 새 알림 표시 업데이트
-    fun updateNotificationSign() {
-        if (savedPrefRepository.getFlag().not()) {
-            savedPrefRepository.setFlag(true)
-            viewModelScope.launch(Dispatchers.IO) {
-                val datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")
+    // 알림 업데이트 Worker 설정 함수
+    fun startWorkRequests(workManager: WorkManager, lifecycleOwner: LifecycleOwner) {
+        workManager.cancelAllWork()
 
-                val savedServiceList = savedPrefRepository.getSvcidList().map {
-                    reservationRepository.getService(it)
-                }
+        val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(1, TimeUnit.HOURS).build()
+        workManager.enqueueUniquePeriodicWork("reservation_alarm", ExistingPeriodicWorkPolicy.KEEP, workRequest)
 
-                // 예약 시작까지 하루 남은 서비스의 개수
-                val list = savedServiceList.filter {
-                    datePattern.format(
-                        LocalDateTime.parse(
-                            it.RCPTBGNDT,
-                            formatter
-                        )
-                    ) > datePattern.format(
-                        LocalDateTime.now()
-                    ) && datePattern.format(
-                        LocalDateTime.parse(
-                            it.RCPTBGNDT,
-                            formatter
-                        )
-                    ) < datePattern.format(
-                        LocalDateTime.now().plusDays(2)
-                    )
-                }.size
-
-                // 예약 마감까지 하루 남은 서비스의 개수
-                val list2 = savedServiceList.filter {
-                    datePattern.format(
-                        LocalDateTime.parse(
-                            it.RCPTENDDT,
-                            formatter
-                        )
-                    ) < datePattern.format(
-                        LocalDateTime.now()
-                    ) && datePattern.format(
-                        LocalDateTime.parse(
-                            it.RCPTENDDT,
-                            formatter
-                        )
-                    ) > datePattern.format(
-                        LocalDateTime.now().minusDays(2)
-                    )
-                }.size
-
-                // 예약 가능한 서비스의 개수
-                val list3 = savedServiceList.filter {
-                    datePattern.format(
-                        LocalDateTime.parse(
-                            it.RCPTBGNDT,
-                            formatter
-                        )
-                    ) == datePattern.format(
-                        LocalDateTime.now()
-                    )
-                }.size
-
-                _notificationSign.postValue(list != 0 || list2 != 0 || list3 != 0)
+        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(lifecycleOwner) {
+            if (it.state == WorkInfo.State.RUNNING) {
+                _repeatWork.value = it.progress.getBoolean("result", false)
             }
         }
     }

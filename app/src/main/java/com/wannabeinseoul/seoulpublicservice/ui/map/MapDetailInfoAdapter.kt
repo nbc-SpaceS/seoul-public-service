@@ -120,12 +120,13 @@ class MapDetailInfoAdapter(
             }
 
             binding.ivMapInfoSaveServiceBtn.setOnClickListener {
-                saveService(item.svcid)
-                if (savedPrefRepository.contains(item.svcid)) {
-                    ivMapInfoSaveServiceBtn.setImageResource(R.drawable.ic_save_fill)
-                    ivMapInfoSaveServiceBtn.drawable.setTint(Color.parseColor("#F8496C"))
-                } else {
-                    ivMapInfoSaveServiceBtn.setImageResource(R.drawable.ic_save_empty)
+                saveService(item.svcid).let {
+                    if (savedPrefRepository.contains(item.svcid)) {
+                        ivMapInfoSaveServiceBtn.setImageResource(R.drawable.ic_save_fill)
+                        ivMapInfoSaveServiceBtn.drawable.setTint(Color.parseColor("#F8496C"))
+                    } else {
+                        ivMapInfoSaveServiceBtn.setImageResource(R.drawable.ic_save_empty)
+                    }
                 }
             }
 
