@@ -28,13 +28,21 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.switchMap
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import com.google.android.material.internal.ViewUtils.hideKeyboard
 import com.google.android.material.tabs.TabLayoutMediator
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.databases.RecentEntity
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentHomeBinding
+import com.wannabeinseoul.seoulpublicservice.service.NotificationWorker
 import com.wannabeinseoul.seoulpublicservice.ui.category.CategoryItemClick
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailCloseInterface
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
@@ -51,6 +59,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.util.concurrent.TimeUnit
 
 class HomeFragment : Fragment() {
 
@@ -68,6 +77,10 @@ class HomeFragment : Fragment() {
         if (result.resultCode == AppCompatActivity.RESULT_OK) {
             homeViewModel.setupRegions()
         }
+    }
+
+    private val workManager by lazy {
+        WorkManager.getInstance(requireContext())
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -265,14 +278,18 @@ class HomeFragment : Fragment() {
                     binding.tvHomeWeatherForecastDescription.isVisible = true
                 }
             }
+
+            repeatWork.observe(viewLifecycleOwner) {
+                if (it) binding.ivHomeNotificationCountBackground.isVisible = true
+            }
         }
     }
 
     // UI 구성 요소 설정
     private fun setupUIComponents() {
         homeViewModel.setupRegions()
-        homeViewModel.updateNotificationSign()
         homeViewModel.setRandomService()
+        homeViewModel.startWorkRequests(workManager, viewLifecycleOwner)
 
         setupViewPager()
         setupBackPress()

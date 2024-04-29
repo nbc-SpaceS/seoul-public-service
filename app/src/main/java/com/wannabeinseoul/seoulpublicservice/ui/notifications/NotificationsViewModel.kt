@@ -26,6 +26,7 @@ class NotificationsViewModel(
     fun updateUiState() {
         viewModelScope.launch(Dispatchers.IO) {
             val datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val datePattern2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH")
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")
 
             val savedServiceList = savedPrefRepository.getSvcidList().map {
@@ -34,9 +35,21 @@ class NotificationsViewModel(
 
             // 예약 시작까지 하루 남은 서비스의 개수
             val list = savedServiceList.filter {
-                datePattern.format(LocalDateTime.parse(it.RCPTBGNDT, formatter)) > datePattern.format(
-                    LocalDateTime.now()) && datePattern.format(LocalDateTime.parse(it.RCPTBGNDT, formatter)) < datePattern.format(
-                    LocalDateTime.now().plusDays(2))
+                datePattern2.format(
+                    LocalDateTime.parse(
+                        it.RCPTBGNDT,
+                        formatter
+                    )
+                ) >= datePattern2.format(
+                    LocalDateTime.now().plusDays(1)
+                ) && datePattern.format(
+                    LocalDateTime.parse(
+                        it.RCPTBGNDT,
+                        formatter
+                    )
+                ) == datePattern.format(
+                    LocalDateTime.now().plusDays(1)
+                )
             }.map {
                 NotificationInfo(
                     it.SVCID,
@@ -48,9 +61,21 @@ class NotificationsViewModel(
 
             // 예약 마감까지 하루 남은 서비스의 개수
             val list2 = savedServiceList.filter {
-                datePattern.format(LocalDateTime.parse(it.RCPTENDDT, formatter)) < datePattern.format(
-                    LocalDateTime.now()) && datePattern.format(LocalDateTime.parse(it.RCPTENDDT, formatter)) > datePattern.format(
-                    LocalDateTime.now().minusDays(2))
+                datePattern2.format(
+                    LocalDateTime.parse(
+                        it.RCPTENDDT,
+                        formatter
+                    )
+                ) >= datePattern2.format(
+                    LocalDateTime.now().plusDays(1)
+                ) && datePattern.format(
+                    LocalDateTime.parse(
+                        it.RCPTENDDT,
+                        formatter
+                    )
+                ) == datePattern.format(
+                    LocalDateTime.now().plusDays(1)
+                )
             }.map {
                 NotificationInfo(
                     it.SVCID,
@@ -62,8 +87,14 @@ class NotificationsViewModel(
 
             // 예약 가능한 서비스의 개수
             val list3 = savedServiceList.filter {
-                datePattern.format(LocalDateTime.parse(it.RCPTBGNDT, formatter)) == datePattern.format(
-                    LocalDateTime.now())
+                datePattern.format(
+                    LocalDateTime.parse(
+                        it.RCPTBGNDT,
+                        formatter
+                    )
+                ) == datePattern.format(
+                    LocalDateTime.now()
+                )
             }.map {
                 NotificationInfo(
                     it.SVCID,
