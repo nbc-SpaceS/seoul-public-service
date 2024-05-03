@@ -11,6 +11,7 @@ private const val JJTAG = "jj-SavedPrefRepository"
 interface SavedPrefRepository {
     fun getSvcidList(): List<String>
     fun setSvcidList(list: List<String>)
+    fun setSvcidListForSynchronization(list: List<String>)
     fun clear()
     fun addSvcidList(svcidList: List<String>)
     fun addSvcid(svcid: String)
@@ -59,6 +60,10 @@ class SavedPrefRepositoryImpl(context: Context) : SavedPrefRepository {
 
     override fun setSvcidList(list: List<String>) {
         _savedSvcidList.value = list
+    }
+
+    override fun setSvcidListForSynchronization(list: List<String>) {
+        _savedSvcidList.postValue(list)
     }
 
     override fun clear() = setSvcidList(emptyList())

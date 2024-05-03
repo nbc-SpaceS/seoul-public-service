@@ -61,7 +61,7 @@ class SettingViewModel(
             if (data.id.isNotEmpty() && data.name.isNotEmpty()) {
                 idPrefRepository.save(data.id)
                 namePrefRepository.save(data.name)
-                savedPrefRepository.setSvcidList(data.savedServiceList)
+                savedPrefRepository.setSvcidListForSynchronization(data.savedServiceList)
 
                 storeKeyToPref(key)
             }
