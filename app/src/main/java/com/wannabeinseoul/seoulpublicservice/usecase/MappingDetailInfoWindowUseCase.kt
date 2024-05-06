@@ -7,6 +7,7 @@ import com.wannabeinseoul.seoulpublicservice.ui.map.DetailInfoWindow
 class MappingDetailInfoWindowUseCase(
     private val savedPrefRepository: SavedPrefRepository
 ) {
+    val list = savedPrefRepository.getSvcidList()
     operator fun invoke(serviceInfoList: List<ReservationEntity>): List<DetailInfoWindow> = serviceInfoList.map {
         DetailInfoWindow(
             svcid = it.SVCID,
@@ -16,7 +17,7 @@ class MappingDetailInfoWindowUseCase(
             payatnm = it.PAYATNM,
             svcstatnm = it.SVCSTATNM,
             svcurl = it.SVCURL,
-            saved = savedPrefRepository.contains(it.SVCID)
+            saved = list.contains(it.SVCID)
         )
     }
 }

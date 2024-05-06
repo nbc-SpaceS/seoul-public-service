@@ -16,6 +16,7 @@ import com.wannabeinseoul.seoulpublicservice.usecase.MappingDetailInfoWindowUseC
 import com.wannabeinseoul.seoulpublicservice.usecase.SaveServiceUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.SearchServiceDataOnMapUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
 
 class MapViewModel(
@@ -29,6 +30,7 @@ class MapViewModel(
 
     private var readyMap: Boolean = false
     private var readyData: Boolean = false
+    private var searchWord = ""
 
     private var _filterCount: Int = 0
     val filterCount: Int get() = _filterCount
@@ -74,6 +76,19 @@ class MapViewModel(
             if (readyMap) {
                 _canStart.postValue(true)
             }
+        }
+    }
+
+    fun updateServiceData(word: String) {
+        val savedOptions = loadSavedOptions()
+        searchWord = word
+
+        _filterCount = savedOptions.count { it.isNotEmpty() }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _filteringData.postValue(searchServiceDataOnMapUseCase(searchWord, savedOptions))
+
+            _canStart.postValue(true)
         }
     }
 

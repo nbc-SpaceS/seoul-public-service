@@ -31,6 +31,7 @@ import com.naver.maps.map.util.MarkerIcons
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentMapBinding
+import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailCloseInterface
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
 import com.wannabeinseoul.seoulpublicservice.ui.dialog.filter.FilterFragment
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
@@ -60,14 +61,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 viewModel.saveService(id)
             },
             moveReservationPage = { url ->
-                changeDetailVisible(false)
-                zoomOut()
-
-                activeMarkers.forEach { marker ->
-                    marker.iconTintColor =
-                        requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                    marker.zIndex = 0
-                }
+                backFromClickMarker()
 
                 startActivity(
                     Intent(
@@ -85,16 +79,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 startActivity(Intent.createChooser(intent, text))
             },
             moveDetailPage = { id ->
-                changeDetailVisible(false)
-                zoomOut()
-
-                activeMarkers.forEach { marker ->
-                    marker.iconTintColor =
-                        requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                    marker.zIndex = 0
-                }
+                backFromClickMarker()
 
                 val dialog = DetailFragment.newInstance(id)
+                dialog.setCloseListener(object : DetailCloseInterface { // 다이얼로그 종료 리스너를 받아 onResume으로 갱신하기
+                    override fun onDialogClosed() {
+                        if (binding.etMapSearch.text.isEmpty()) {
+                            viewModel.updateServiceData("")
+                        } else {
+                            viewModel.updateServiceData(binding.etMapSearch.text.toString())
+                        }
+                    }
+                })
                 dialog.show(requireActivity().supportFragmentManager, "Detail")
             },
             savedPrefRepository = viewModel.getSavedPrefRepository()
@@ -154,13 +150,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         rvAdapter.submitList(viewModel.loadSavedOptions().flatten())
 
         binding.tvMapFilterBtn.setOnClickListener {
-            changeDetailVisible(false)
-
-            activeMarkers.forEach { marker ->
-                marker.iconTintColor =
-                    requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                marker.zIndex = 0
-            }
+            backFromClickMarker()
 
             val dialog = FilterFragment.newInstance()
             dialog.show(requireActivity().supportFragmentManager, "FilterFragment")
@@ -229,7 +219,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         viewModel.setServiceData()
 
         updateData.observe(viewLifecycleOwner) { list ->
-            adapter.submitList(emptyList())
             adapter.submitList(list.toList())
             binding.tvMapInfoCount.text = "1"
         }
@@ -291,13 +280,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         viewModel.checkReadyMap()
 
         map.setOnMapClickListener { _, _ ->
-            changeDetailVisible(false)
-            activeMarkers.forEach { marker ->
-                marker.iconTintColor =
-                    requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                marker.zIndex = 0
-            }
-            zoomOut()
+            backFromClickMarker()
         }
 
         val fusedLocationSource = app.fusedLocationSource
@@ -368,6 +351,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
+    private fun backFromClickMarker() {
+        changeDetailVisible(false)
+        zoomOut()
+
+        activeMarkers.forEach { marker ->
+            marker.iconTintColor =
+                requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
+            marker.zIndex = 0
+        }
+
+        adapter.submitList(null)
+    }
+
     private fun addCallBack() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (binding.etMapSearch.hasFocus()) {
@@ -386,12 +382,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
+        viewModel.setServiceData(binding.etMapSearch.text.toString())
         mapView.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        binding.etMapSearch.setText("")
+        backFromClickMarker()
         mapView.onPause()
     }
 
