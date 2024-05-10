@@ -56,7 +56,7 @@ class EditProfileDialog : DialogFragment() {
     private val container by lazy { app.container }
     private val id by lazy { container.idPrefRepository.load() }
 
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
 
     private val imm by lazy {
         requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

@@ -67,7 +67,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val homeViewModel: HomeViewModel by viewModels { HomeViewModel.factory }
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
 
     private var backPressedOnce = false
 
@@ -456,6 +456,7 @@ class HomeFragment : Fragment() {
                 val dialog = DetailFragment.newInstance(homeViewModel.randomService.random())
                 dialog.setCloseListener(object : DetailCloseInterface { // 다이얼로그 종료 리스너를 받아 onResume으로 갱신하기
                     override fun onDialogClosed() {
+                        mainViewModel.setMappingData()
                         onResume()
                     }
                 })
@@ -593,6 +594,7 @@ class HomeFragment : Fragment() {
                 val dialog = DetailFragment.newInstance(svcID)
                 dialog.setCloseListener(object : DetailCloseInterface {
                     override fun onDialogClosed() {
+                        mainViewModel.setMappingData()
                         onResume()
                     }
                 })

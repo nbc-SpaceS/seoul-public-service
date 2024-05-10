@@ -27,7 +27,7 @@ class FilterFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     private val viewModel: FilterViewModel by viewModels { FilterViewModel.factory }
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
 
     private val filterOptions by lazy {
         listOf(

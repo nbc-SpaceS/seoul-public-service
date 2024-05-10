@@ -22,7 +22,7 @@ class FacilityFragment : Fragment() {
 
     private val regionPrefRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.regionPrefRepository }
     private val dbMemoryRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.dbMemoryRepository }
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
     private val adapter by lazy {
         ItemAdapter(
             regionPrefRepository,

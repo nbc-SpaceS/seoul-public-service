@@ -31,7 +31,7 @@ class SettingDialog: DialogFragment() {
     private val binding get() = _binding!!
 
     private val viewModel: SettingViewModel by viewModels { SettingViewModel.factory }
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
 
     override fun onCreateView(
         inflater: LayoutInflater,

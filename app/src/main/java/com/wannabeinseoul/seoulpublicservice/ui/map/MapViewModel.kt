@@ -21,96 +21,35 @@ import kotlinx.coroutines.launch
 
 class MapViewModel(
     private val loadSavedFilterOptionsUseCase: LoadSavedFilterOptionsUseCase,
-    private val filterServiceDataOnMapUseCase: FilterServiceDataOnMapUseCase,
     private val saveServiceUseCase: SaveServiceUseCase,
-    private val mappingDetailInfoWindowUseCase: MappingDetailInfoWindowUseCase,
     private val getSavedServiceUseCase: GetSavedServiceUseCase,
-    private val searchServiceDataOnMapUseCase: SearchServiceDataOnMapUseCase
 ) : ViewModel() {
-
-    private var readyMap: Boolean = false
-    private var readyData: Boolean = false
-    private var searchWord = ""
 
     private var _filterCount: Int = 0
     val filterCount: Int get() = _filterCount
 
-    private val _canStart: MutableLiveData<Boolean> = MutableLiveData()
-    val canStart: LiveData<Boolean> get() = _canStart
-
-    private val _filteringData: MutableLiveData<HashMap<Pair<String, String>, List<ReservationEntity>>> =
+    private val _filteringData: MutableLiveData<HashMap<Pair<String, String>, List<DetailInfoWindow>>> =
         MutableLiveData()
-    val filteringData: LiveData<HashMap<Pair<String, String>, List<ReservationEntity>>> get() = _filteringData
+    val filteringData: LiveData<HashMap<Pair<String, String>, List<DetailInfoWindow>>> get() = _filteringData
 
     private val _updateData: MutableLiveData<List<DetailInfoWindow>> = MutableLiveData()
     val updateData: LiveData<List<DetailInfoWindow>> get() = _updateData
 
-    fun setServiceData() {
-        _canStart.value = false
-        readyData = false
+    fun setServiceData(mappingData: HashMap<Pair<String, String>, List<DetailInfoWindow>>) {
         val savedOptions = loadSavedOptions()
 
         _filterCount = savedOptions.count { it.isNotEmpty() }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            _filteringData.postValue(filterServiceDataOnMapUseCase(savedOptions))
-
-            readyData = true
-            if (readyMap) {
-                _canStart.postValue(true)
-            }
-        }
-    }
-
-    fun setServiceData(word: String) {
-        _canStart.value = false
-        readyData = false
-        val savedOptions = loadSavedOptions()
-
-        _filterCount = savedOptions.count { it.isNotEmpty() }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            _filteringData.postValue(searchServiceDataOnMapUseCase(word, savedOptions))
-
-            readyData = true
-            if (readyMap) {
-                _canStart.postValue(true)
-            }
-        }
-    }
-
-    fun updateServiceData(word: String) {
-        val savedOptions = loadSavedOptions()
-        searchWord = word
-
-        _filterCount = savedOptions.count { it.isNotEmpty() }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            _filteringData.postValue(searchServiceDataOnMapUseCase(searchWord, savedOptions))
-
-            _canStart.postValue(true)
-        }
+        _filteringData.value = mappingData
     }
 
     fun loadSavedOptions(): List<List<String>> = loadSavedFilterOptionsUseCase()
-
-    fun checkReadyMap() {
-        readyMap = true
-        if (readyData) {
-            _canStart.postValue(true)
-        }
-    }
 
     fun saveService(id: String) {
         saveServiceUseCase(id)
     }
 
-    fun updateInfo(info: List<ReservationEntity>) {
-        _updateData.value = mappingDetailInfoWindowUseCase(info)
-    }
-
-    fun initMap() {
-        readyMap = false
+    fun updateInfo(info: List<DetailInfoWindow>) {
+        _updateData.value = info
     }
 
     fun getSavedPrefRepository() = getSavedServiceUseCase()
@@ -123,11 +62,8 @@ class MapViewModel(
                 val container = application.container
                 MapViewModel(
                     loadSavedFilterOptionsUseCase = container.loadSavedFilterOptionsUseCase,
-                    filterServiceDataOnMapUseCase = container.filterServiceDataOnMapUseCase,
                     saveServiceUseCase = container.saveServiceUseCase,
-                    mappingDetailInfoWindowUseCase = container.mappingDetailInfoWindowUseCase,
                     getSavedServiceUseCase = container.getSavedServiceUseCase,
-                    searchServiceDataOnMapUseCase = container.searchServiceDataOnMapUseCase
                 )
             }
         }

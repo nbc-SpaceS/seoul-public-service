@@ -7,12 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentRecommendationBinding
+import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailCloseInterface
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
+import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
 import com.wannabeinseoul.seoulpublicservice.ui.recommendation.RecommendationViewModel.Companion.factory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,11 +25,17 @@ class RecommendationFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener 
 
     private lateinit var binding: FragmentRecommendationBinding
     private val viewModel: RecommendationViewModel by viewModels { factory }
+    private val mainViewModel: MainViewModel by activityViewModels { factory }
 
     private val showDetailFragment: (RecommendationData) -> Unit =
         { recommendationData: RecommendationData ->
-            DetailFragment.newInstance(recommendationData.svcid)
-                .show(requireActivity().supportFragmentManager, "Detail")
+            val dialog = DetailFragment.newInstance(recommendationData.svcid)
+            dialog.setCloseListener(object : DetailCloseInterface {
+                override fun onDialogClosed() {
+                    mainViewModel.setMappingData()
+                }
+            })
+            dialog.show(requireActivity().supportFragmentManager, "Detail")
         }
 
     private val recommendationAdapter = RecommendationAdapter()

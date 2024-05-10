@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentMyPageBinding
+import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailCloseInterface
 
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
 import com.wannabeinseoul.seoulpublicservice.ui.dialog.setting.SettingDialog
@@ -28,13 +29,18 @@ class MyPageFragment : Fragment() {
     private var _binding: FragmentMyPageBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MyPageViewModel by viewModels { MyPageViewModel.factory }
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
 
     private val app by lazy { requireActivity().application as SeoulPublicServiceApplication }
 
     private val showDetailFragment = { svcid: String ->
-        DetailFragment.newInstance(svcid)
-            .show(requireActivity().supportFragmentManager, "Detail")
+        val dialog = DetailFragment.newInstance(svcid)
+        dialog.setCloseListener(object : DetailCloseInterface {
+            override fun onDialogClosed() {
+                mainViewModel.setMappingData()
+            }
+        })
+        dialog.show(requireActivity().supportFragmentManager, "Detail")
     }
 
     private val showSettingDialog = {
