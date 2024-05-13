@@ -13,6 +13,7 @@ import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.data.Item
 import com.wannabeinseoul.seoulpublicservice.data.ItemRepository
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentMedicalBinding
+import com.wannabeinseoul.seoulpublicservice.ui.category.CategoryFragment2
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
 import com.wannabeinseoul.seoulpublicservice.ui.main.adapter.ItemAdapter
 
@@ -23,7 +24,16 @@ class MedicalFragment : Fragment() {
     private val regionPrefRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.regionPrefRepository }
     private val dbMemoryRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.dbMemoryRepository }
     private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
-    private val adapter by lazy { ItemAdapter(regionPrefRepository, "진료복지") { mainViewModel.moveSelectRegions(it) } }
+    private val adapter by lazy {
+        ItemAdapter(
+            regionPrefRepository,
+            "진료복지",
+            moveCategoryPage = { category, region ->
+                val dialog = CategoryFragment2.newInstance(category, region)
+                dialog.show(requireActivity().supportFragmentManager, "Category")
+            }
+        )
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment

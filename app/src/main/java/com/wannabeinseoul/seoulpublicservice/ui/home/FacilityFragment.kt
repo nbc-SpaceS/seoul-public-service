@@ -13,6 +13,9 @@ import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.data.Item
 import com.wannabeinseoul.seoulpublicservice.data.ItemRepository
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentFacilityBinding
+import com.wannabeinseoul.seoulpublicservice.ui.category.CategoryFragment2
+import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailCloseInterface
+import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
 import com.wannabeinseoul.seoulpublicservice.ui.main.adapter.ItemAdapter
 
@@ -26,8 +29,12 @@ class FacilityFragment : Fragment() {
     private val adapter by lazy {
         ItemAdapter(
             regionPrefRepository,
-            "체육시설"
-        ) { mainViewModel.moveSelectRegions(it) }
+            "체육시설",
+            moveCategoryPage = { category, region ->
+                val dialog = CategoryFragment2.newInstance(category, region)
+                dialog.show(requireActivity().supportFragmentManager, "Category")
+            }
+        )
     }
 
     override fun onCreateView(

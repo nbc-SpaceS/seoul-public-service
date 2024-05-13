@@ -59,7 +59,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         MapDetailInfoAdapter(
             saveService = { id ->
                 viewModel.saveService(id)
-                mainViewModel.setMappingData()
             },
             moveReservationPage = { url ->
                 backFromClickMarker()
@@ -229,12 +228,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 it.map = null
             }
             activeMarkers.clear()
-              // 다른 페이지에서 공유뷰모델을 이용하여 데이터를 변경할 때마다 다 뜨기 때문에 방법을 찾기 전까지는 제외해놓음
-//            if (dataSet.size == 0) {
-//                toastShort(requireContext(), "필터링 결과가 없습니다.")
-//            } else {
-//                toastShort(requireContext(), "${filteringData.value?.size}+개의 서비스가 있습니다.")
-//            }
+            // 다른 페이지에서 공유뷰모델을 이용하여 데이터를 변경할 때마다 다 뜨기 때문에 방법을 찾기 전까지는 제외해놓음
+            if (mainViewModel.isSearch) {
+                if (dataSet.size == 0) {
+                    toastShort(requireContext(), "필터링 결과가 없습니다.")
+                } else {
+                    toastShort(requireContext(), "${filteringData.value?.size}+개의 서비스가 있습니다.")
+                }
+            }
 
             dataSet.forEach {
                 val marker = Marker()
@@ -271,7 +272,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onMapReady(map: NaverMap) {
-
         naverMap = map
         map.maxZoom = 18.0
         map.minZoom = 9.0

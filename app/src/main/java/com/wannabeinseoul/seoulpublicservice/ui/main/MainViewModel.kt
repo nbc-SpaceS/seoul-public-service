@@ -24,6 +24,9 @@ class MainViewModel(
     private val getSavedServiceUseCase: GetSavedServiceUseCase
 ): ViewModel() {
 
+    private var _isSearch: Boolean = false
+    val isSearch: Boolean get() = _isSearch
+
     private var _selectedServiceId: String = ""
     val selectedServiceId: String get() = _selectedServiceId
 
@@ -86,6 +89,7 @@ class MainViewModel(
                 mappingData[it.key] = mappingDetailInfoWindowUseCase(it.value)
             }
 
+            _isSearch = isSearch
             _mappingData.value = mappingData
         }
 
@@ -105,6 +109,7 @@ class MainViewModel(
                 mappingData[it.key] = mappingDetailInfoWindowUseCase(it.value)
             }
 
+            _isSearch = isSearch
             _mappingData.value = mappingData
         }
 
