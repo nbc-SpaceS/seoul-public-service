@@ -31,6 +31,7 @@ import com.naver.maps.map.util.MarkerIcons
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentMapBinding
+import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailCloseInterface
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
 import com.wannabeinseoul.seoulpublicservice.ui.dialog.filter.FilterFragment
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
@@ -60,14 +61,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 viewModel.saveService(id)
             },
             moveReservationPage = { url ->
-                changeDetailVisible(false)
-                zoomOut()
-
-                activeMarkers.forEach { marker ->
-                    marker.iconTintColor =
-                        requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                    marker.zIndex = 0
-                }
+                backFromClickMarker()
 
                 startActivity(
                     Intent(
@@ -85,16 +79,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 startActivity(Intent.createChooser(intent, text))
             },
             moveDetailPage = { id ->
-                changeDetailVisible(false)
-                zoomOut()
-
-                activeMarkers.forEach { marker ->
-                    marker.iconTintColor =
-                        requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                    marker.zIndex = 0
-                }
+                backFromClickMarker()
 
                 val dialog = DetailFragment.newInstance(id)
+                dialog.setCloseListener(object : DetailCloseInterface {
+                    override fun onDialogClosed() {
+                        mainViewModel.setMappingData()
+                    }
+                })
                 dialog.show(requireActivity().supportFragmentManager, "Detail")
             },
             savedPrefRepository = viewModel.getSavedPrefRepository()
@@ -102,7 +94,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private val viewModel: MapViewModel by viewModels { MapViewModel.factory }
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
 
     private val matchingColor = hashMapOf(
         "체육시설" to R.color.marker1_solid,
@@ -128,7 +120,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mapView.getMapAsync(this)
 
         addCallBack()
-        initViewModel()
 
         return binding.root
     }
@@ -138,6 +129,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
 
         initView()
+        initViewModel()
+        initMainViewModel()
     }
 
     private fun initView() {
@@ -154,13 +147,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         rvAdapter.submitList(viewModel.loadSavedOptions().flatten())
 
         binding.tvMapFilterBtn.setOnClickListener {
-            changeDetailVisible(false)
-
-            activeMarkers.forEach { marker ->
-                marker.iconTintColor =
-                    requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                marker.zIndex = 0
-            }
+            backFromClickMarker()
 
             val dialog = FilterFragment.newInstance()
             dialog.show(requireActivity().supportFragmentManager, "FilterFragment")
@@ -186,9 +173,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         binding.etMapSearch.setOnEditorActionListener { textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 if (textView.text.isNotEmpty()) {
-                    viewModel.setServiceData(textView.text.toString())
+                    mainViewModel.setMappingData(textView.text.toString(), true)
                 } else {
-                    viewModel.setServiceData()
+                    mainViewModel.setMappingData(true)
                 }
                 setInitialState()
                 moveCamera(null, null, 10.0)
@@ -202,14 +189,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 changeDetailVisible(false)
             }
         }
+    }
 
-        viewModel.initMap()
-        mainViewModel.applyFilter.observe(viewLifecycleOwner) { isApply ->
+    private fun initMainViewModel() = with(mainViewModel) {
+        applyFilter.observe(viewLifecycleOwner) { isApply ->
             if (isApply) {
                 if (binding.etMapSearch.text.isNotEmpty()) {
-                    viewModel.setServiceData(binding.etMapSearch.text.toString())
+                    mainViewModel.setMappingData(binding.etMapSearch.text.toString(), true)
                 } else {
-                    viewModel.setServiceData()
+                    mainViewModel.setMappingData(true)
                 }
                 rvAdapter.submitList(viewModel.loadSavedOptions().flatten())
                 moveCamera(null, null, 10.0)
@@ -223,81 +211,75 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             }
         }
+
+        mappingData.observe(viewLifecycleOwner) {
+            viewModel.setServiceData(it)
+        }
     }
 
     private fun initViewModel() = with(viewModel) {
-        viewModel.setServiceData()
-
         updateData.observe(viewLifecycleOwner) { list ->
-            adapter.submitList(emptyList())
             adapter.submitList(list.toList())
             binding.tvMapInfoCount.text = "1"
         }
 
-        canStart.observe(viewLifecycleOwner) { start ->
-            if (start) {
-                activeMarkers.forEach {
-                    it.map = null
-                }
-                activeMarkers.clear()
-
-                if (filteringData.value?.size == 0) {
+        filteringData.observe(viewLifecycleOwner) { dataSet ->
+            activeMarkers.forEach {
+                it.map = null
+            }
+            activeMarkers.clear()
+            // 다른 페이지에서 공유뷰모델을 이용하여 데이터를 변경할 때마다 다 뜨기 때문에 방법을 찾기 전까지는 제외해놓음
+            if (mainViewModel.isSearch) {
+                if (dataSet.size == 0) {
                     toastShort(requireContext(), "필터링 결과가 없습니다.")
                 } else {
                     toastShort(requireContext(), "${filteringData.value?.size}+개의 서비스가 있습니다.")
                 }
+            }
 
-                filteringData.value?.forEach {
-                    val marker = Marker()
-                    activeMarkers.add(marker)
-                    marker.position = LatLng(it.key.first.toDouble(), it.key.second.toDouble())
-                    marker.map = naverMap
-                    marker.icon = MarkerIcons.BLACK
-                    marker.iconTintColor = requireContext().getColor(
-                        matchingColor[it.value[0].MAXCLASSNM] ?: R.color.gray
-                    )
-                    marker.tag = it.value[0].MAXCLASSNM
-                    if (it.value.size > 1) marker.captionText = it.value.size.toString()
-                    marker.setCaptionAligns(Align.Top)
-                    marker.captionTextSize = 16f
-                    marker.captionMinZoom = 12.5
-                    marker.captionMaxZoom = 18.0
-                    marker.onClickListener = Overlay.OnClickListener { _ ->
-                        changeDetailVisible(true)
-                        activeMarkers.forEach { marker ->
-                            marker.iconTintColor =
-                                requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                            marker.zIndex = 0
-                        }
+            dataSet.forEach {
+                val marker = Marker()
+                activeMarkers.add(marker)
+                marker.position = LatLng(it.key.first.toDouble(), it.key.second.toDouble())
+                marker.map = naverMap
+                marker.icon = MarkerIcons.BLACK
+                marker.iconTintColor = requireContext().getColor(
+                    matchingColor[it.value[0].maxclassnm] ?: R.color.gray
+                )
+                marker.tag = it.value[0].maxclassnm
+                if (it.value.size > 1) marker.captionText = it.value.size.toString()
+                marker.setCaptionAligns(Align.Top)
+                marker.captionTextSize = 16f
+                marker.captionMinZoom = 12.5
+                marker.captionMaxZoom = 18.0
+                marker.onClickListener = Overlay.OnClickListener { _ ->
+                    changeDetailVisible(true)
+                    activeMarkers.forEach { marker ->
                         marker.iconTintColor =
-                            requireContext().getColor(R.color.point_color)
-                        marker.zIndex = 10
-                        viewModel.updateInfo(it.value)
-                        binding.vpMapDetailInfo.setCurrentItem(0, false)
-                        moveCamera(it.key.first.toDouble(), it.key.second.toDouble())
-                        true
+                            requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
+                        marker.zIndex = 0
                     }
+                    marker.iconTintColor =
+                        requireContext().getColor(R.color.point_color)
+                    marker.zIndex = 10
+                    viewModel.updateInfo(it.value)
+                    binding.vpMapDetailInfo.setCurrentItem(0, false)
+                    moveCamera(it.key.first.toDouble(), it.key.second.toDouble())
+                    true
                 }
             }
         }
     }
 
     override fun onMapReady(map: NaverMap) {
-
         naverMap = map
         map.maxZoom = 18.0
         map.minZoom = 9.0
 
-        viewModel.checkReadyMap()
+        mainViewModel.setMappingData()
 
         map.setOnMapClickListener { _, _ ->
-            changeDetailVisible(false)
-            activeMarkers.forEach { marker ->
-                marker.iconTintColor =
-                    requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                marker.zIndex = 0
-            }
-            zoomOut()
+            backFromClickMarker()
         }
 
         val fusedLocationSource = app.fusedLocationSource
@@ -368,6 +350,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
+    private fun backFromClickMarker() {
+        changeDetailVisible(false)
+        zoomOut()
+
+        activeMarkers.forEach { marker ->
+            marker.iconTintColor =
+                requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
+            marker.zIndex = 0
+        }
+
+        adapter.submitList(null)
+    }
+
     private fun addCallBack() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (binding.etMapSearch.hasFocus()) {
@@ -386,12 +381,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
+        mainViewModel.setMappingData(binding.etMapSearch.text.toString())
         mapView.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        binding.etMapSearch.setText("")
+        backFromClickMarker()
         mapView.onPause()
     }
 

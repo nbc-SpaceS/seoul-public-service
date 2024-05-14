@@ -1,6 +1,7 @@
 package com.wannabeinseoul.seoulpublicservice.ui.map
 
 data class DetailInfoWindow(
+    val maxclassnm: String,
     val svcid: String,
     val imgurl: String,
     val areanm: String,

@@ -13,6 +13,7 @@ import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
 import com.wannabeinseoul.seoulpublicservice.data.Item
 import com.wannabeinseoul.seoulpublicservice.data.ItemRepository
 import com.wannabeinseoul.seoulpublicservice.databinding.FragmentCultureEventBinding
+import com.wannabeinseoul.seoulpublicservice.ui.category.CategoryFragment2
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
 import com.wannabeinseoul.seoulpublicservice.ui.main.adapter.ItemAdapter
 
@@ -22,10 +23,23 @@ class CultureEventFragment : Fragment() {
 
     private val regionPrefRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.regionPrefRepository }
     private val dbMemoryRepository by lazy { (requireActivity().application as SeoulPublicServiceApplication).container.dbMemoryRepository }
-    private val mainViewModel: MainViewModel by activityViewModels()
-    private val adapter by lazy { ItemAdapter(regionPrefRepository, "문화체험") { mainViewModel.moveSelectRegions(it) } }
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
+    private val adapter by lazy {
+        ItemAdapter(
+            regionPrefRepository,
+            "문화체험",
+            moveCategoryPage = { category, region ->
+                val dialog = CategoryFragment2.newInstance(category, region)
+                dialog.show(requireActivity().supportFragmentManager, "Category")
+            }
+        )
+    }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentCultureEventBinding.inflate(inflater, container, false)
         return binding.root
@@ -59,7 +73,8 @@ class CultureEventFragment : Fragment() {
                     item.copy(count = size)
                 }
 
-                binding.clCultureEventNothing.isVisible = cultureEventItems.all { it.count == 0 }
+                binding.clCultureEventNothing.isVisible =
+                    cultureEventItems.all { it.count == 0 }
                 adapter.submitList(cultureEventItems)
             }
         }

@@ -25,11 +25,17 @@ class NotificationsFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     private val viewModel: NotificationsViewModel by viewModels { NotificationsViewModel.factory }
+    private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
 
     private val adapter: NotificationAdapter by lazy {
         NotificationAdapter(
             moveDetail = {
                 val dialog = DetailFragment.newInstance(it)
+                dialog.setCloseListener(object : DetailCloseInterface {
+                    override fun onDialogClosed() {
+                        mainViewModel.setMappingData()
+                    }
+                })
                 dialog.show(requireActivity().supportFragmentManager, "Detail")
                 dismiss()
             }

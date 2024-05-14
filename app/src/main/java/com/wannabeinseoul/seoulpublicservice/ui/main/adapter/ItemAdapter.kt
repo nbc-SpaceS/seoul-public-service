@@ -18,7 +18,7 @@ import com.wannabeinseoul.seoulpublicservice.ui.category.CategoryActivity
 class ItemAdapter(
     private val regionPrefRepository: RegionPrefRepository,
     private val maxClass: String,
-    private val moveReselect: (Boolean) -> Unit
+    private val moveCategoryPage: (String, String) -> Unit
 ) : ListAdapter<Item, ItemAdapter.ItemViewHolder>(object : DiffUtil.ItemCallback<Item>() {
     override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
         return oldItem.name == newItem.name
@@ -31,7 +31,7 @@ class ItemAdapter(
 }) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val binding = ItemHomeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ItemViewHolder(binding, moveReselect)
+        return ItemViewHolder(binding, moveCategoryPage)
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
@@ -42,7 +42,7 @@ class ItemAdapter(
         return currentList.size
     }
 
-    inner class ItemViewHolder(val binding: ItemHomeBinding, private val moveReselect: (Boolean) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+    inner class ItemViewHolder(private val binding: ItemHomeBinding, private val moveCategoryPage: (String, String) -> Unit) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Item) = with(binding) {
             ivIcon.setImageResource(item.icon)
             tvName.text = item.name
@@ -62,55 +62,31 @@ class ItemAdapter(
                     // 아이콘의 배경색과 색상을 변경
                     setClickedIconColor()
                     // 선택된 항목의 데이터와 지역을 가지고 카테고리 페이지로 이동
-                    val intent = Intent(it.context, CategoryActivity::class.java).apply {
-                        if (item.name == "병원") {
-                            putExtra("category", "서북병원")
-                        } else {
-                            putExtra("category", item.name)
-                        }
-
-                        val region = regionPrefRepository.loadSelectedRegion()
-                        if (region == "지역선택") {
-                            putExtra("region", "")
-                        } else {
-                            putExtra("region", region)
-                        }
-                    }
-                    Log.d(
-                        "ItemAdapter",
-                        "Moving to CategoryActivity with category: ${item.name}, region: ${regionPrefRepository.loadSelectedRegion()}"
-                    )
-                    it.context.startActivity(intent)
+                    val region = regionPrefRepository.loadSelectedRegion()
+                    moveCategoryPage(if (item.name == "병원") "서북병원" else item.name, if (region == "지역선택") "" else region)
+//                    val intent = Intent(it.context, CategoryActivity::class.java).apply {
+//                        if (item.name == "병원") {
+//                            putExtra("category", "서북병원")
+//                        } else {
+//                            putExtra("category", item.name)
+//                        }
+//
+//                        val region = regionPrefRepository.loadSelectedRegion()
+//                        if (region == "지역선택") {
+//                            putExtra("region", "")
+//                        } else {
+//                            putExtra("region", region)
+//                        }
+//                    }
+//                    Log.d(
+//                        "ItemAdapter",
+//                        "Moving to CategoryActivity with category: ${item.name}, region: ${regionPrefRepository.loadSelectedRegion()}"
+//                    )
+//                    it.context.startActivity(intent)
                     // 일정 시간 후에 아이콘의 배경색과 색상을 원래대로 복원
                     itemView.postDelayed({
                         setIconColor()
                     }, 500)
-//                    if (regionPrefRepository.loadSelectedRegion() == "지역선택") {
-//                        Toast.makeText(it.context, "관심지역을 먼저 선택해주세요.", Toast.LENGTH_SHORT).show()
-//                        moveReselect(true)
-//                    } else {
-//                        // 아이콘의 배경색과 색상을 변경
-//                        setClickedIconColor()
-//                        // 선택된 항목의 데이터와 지역을 가지고 카테고리 페이지로 이동
-//                        val intent = Intent(it.context, CategoryActivity::class.java).apply {
-//                            if (item.name == "병원") {
-//                                putExtra("category", "서북병원")
-//                            } else {
-//                                putExtra("category", item.name)
-//                            }
-//
-//                            putExtra("region", regionPrefRepository.loadSelectedRegion())
-//                        }
-//                        Log.d(
-//                            "ItemAdapter",
-//                            "Moving to CategoryActivity with category: ${item.name}, region: ${regionPrefRepository.loadSelectedRegion()}"
-//                        )
-//                        it.context.startActivity(intent)
-//                        // 일정 시간 후에 아이콘의 배경색과 색상을 원래대로 복원
-//                        itemView.postDelayed({
-//                            setIconColor()
-//                        }, 500)
-//                    }
                 }
             }
         }

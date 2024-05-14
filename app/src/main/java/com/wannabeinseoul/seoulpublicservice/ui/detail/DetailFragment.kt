@@ -44,7 +44,6 @@ class DetailFragment : DialogFragment(), OnMapReadyCallback {
 
     private val app by lazy { requireActivity().application as SeoulPublicServiceApplication }
     private val viewModel: DetailViewModel by viewModels { DetailViewModel.factory }
-    private val mainViewModel: MainViewModel by activityViewModels()
 
     private var param1: String? = null
     private var textOpen = false    // 텍스트 뷰가 펼쳐져 있는지(false = 접힌 상태, true = 펼친 상태)
