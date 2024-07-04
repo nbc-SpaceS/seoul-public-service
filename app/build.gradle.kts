@@ -6,6 +6,8 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 val properties = Properties()
@@ -49,6 +51,9 @@ android {
     buildFeatures {
         buildConfig = true
         viewBinding = true
+    }
+    kapt {
+        correctErrorTypes = true
     }
 }
 
@@ -95,4 +100,7 @@ dependencies {
 
     //새로고침 관련 라이브러리
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    implementation("com.google.dagger:hilt-android:2.41")
+    kapt("com.google.dagger:hilt-compiler:2.41")
 }
