@@ -2,6 +2,9 @@ package com.wannabeinseoul.seoulpublicservice.ui.map
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -27,6 +30,7 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
+import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.util.MarkerIcons
 import com.wannabeinseoul.seoulpublicservice.R
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
@@ -50,6 +54,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private val activeMarkers: MutableList<Marker> = mutableListOf()
+    private var selectedMarker: Marker? = null
 
     private val rvAdapter: MapOptionAdapter by lazy {
         MapOptionAdapter()
@@ -103,6 +108,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         "공간시설" to R.color.marker4_solid,
         "진료복지" to R.color.marker5_solid
     )
+
+    private val strokePaint by lazy {
+        Paint().apply {
+            color = requireContext().getColor(
+                R.color.gray
+            )
+            strokeWidth = 1f
+            style = Paint.Style.STROKE
+        }
+    }
+
+    private val fillPaint by lazy {
+        Paint().apply {
+            color = requireContext().getColor(
+                R.color.black
+            )
+            isAntiAlias = true
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -242,7 +266,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 activeMarkers.add(marker)
                 marker.position = LatLng(it.key.first.toDouble(), it.key.second.toDouble())
                 marker.map = naverMap
-                marker.icon = MarkerIcons.BLACK
+                marker.icon = if (naverMap!!.cameraPosition.zoom > 13.1) {
+                    MarkerIcons.BLACK
+                } else {
+                    createDotIcon(it.value[0].maxclassnm)
+                }
                 marker.iconTintColor = requireContext().getColor(
                     matchingColor[it.value[0].maxclassnm] ?: R.color.gray
                 )
@@ -250,18 +278,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 if (it.value.size > 1) marker.captionText = it.value.size.toString()
                 marker.setCaptionAligns(Align.Top)
                 marker.captionTextSize = 16f
-                marker.captionMinZoom = 12.5
+                marker.captionMinZoom = 13.1
                 marker.captionMaxZoom = 18.0
                 marker.onClickListener = Overlay.OnClickListener { _ ->
                     changeDetailVisible(true)
-                    activeMarkers.forEach { marker ->
-                        marker.iconTintColor =
-                            requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
-                        marker.zIndex = 0
+                    selectedMarker?.let { prev ->
+                        prev.iconTintColor = requireContext().getColor(matchingColor[prev.tag] ?: R.color.gray)
+                        prev.zIndex = 0
                     }
+                    marker.icon = MarkerIcons.BLACK
                     marker.iconTintColor =
                         requireContext().getColor(R.color.point_color)
                     marker.zIndex = 10
+                    selectedMarker = marker
                     viewModel.updateInfo(it.value)
                     binding.vpMapDetailInfo.setCurrentItem(0, false)
                     moveCamera(it.key.first.toDouble(), it.key.second.toDouble())
@@ -280,6 +309,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         map.setOnMapClickListener { _, _ ->
             backFromClickMarker()
+        }
+
+        map.addOnCameraChangeListener { _, _ ->
+            updateMarker()
         }
 
         val fusedLocationSource = app.fusedLocationSource
@@ -304,6 +337,37 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         map.uiSettings.isRotateGesturesEnabled = false
 
         moveCamera(latLng = null, 14.5)
+    }
+
+    private fun updateMarker() {
+        val zoom = naverMap!!.cameraPosition.zoom
+
+        if (zoom > 13.1) {
+            activeMarkers.forEach {
+                if (it != selectedMarker) {
+                    it.icon = MarkerIcons.BLACK
+                    it.iconTintColor = requireContext().getColor(
+                        matchingColor[it.tag] ?: R.color.gray
+                    )
+                }
+            }
+        } else {
+            activeMarkers.forEach {
+                if (it != selectedMarker) {
+                    it.icon = createDotIcon(it.tag.toString())
+                }
+            }
+        }
+    }
+
+    private fun createDotIcon(tag: String): OverlayImage {
+        val size = 30  // 점의 크기 (픽셀)
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, fillPaint)
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, strokePaint)
+        return OverlayImage.fromBitmap(bitmap)
     }
 
     private val cityHall = LatLng(37.5666, 126.9782)
@@ -352,15 +416,23 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun backFromClickMarker() {
         changeDetailVisible(false)
-        zoomOut()
+//        zoomOut()
 
-        activeMarkers.forEach { marker ->
+        val zoom = naverMap!!.cameraPosition.zoom
+
+        selectedMarker?.let { marker ->
+            marker.icon = if (zoom > 13.1) {
+                MarkerIcons.BLACK
+            } else {
+                createDotIcon(marker.tag.toString())
+            }
+
             marker.iconTintColor =
                 requireContext().getColor(matchingColor[marker.tag] ?: R.color.gray)
             marker.zIndex = 0
         }
 
-        adapter.submitList(null)
+        selectedMarker = null
     }
 
     private fun addCallBack() {
@@ -381,7 +453,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
-        mainViewModel.setMappingData(binding.etMapSearch.text.toString())
+        mainViewModel.setMappingData(binding.etMapSearch.text.toString(), true)
+        selectedMarker = null
         mapView.onResume()
     }
 
