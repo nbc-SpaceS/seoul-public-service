@@ -4,20 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wannabeinseoul.seoulpublicservice.SeoulPublicServiceApplication
-import com.wannabeinseoul.seoulpublicservice.databases.ReservationEntity
-import com.wannabeinseoul.seoulpublicservice.usecase.FilterServiceDataOnMapUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.GetSavedServiceUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.LoadSavedFilterOptionsUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.MappingDetailInfoWindowUseCase
 import com.wannabeinseoul.seoulpublicservice.usecase.SaveServiceUseCase
-import com.wannabeinseoul.seoulpublicservice.usecase.SearchServiceDataOnMapUseCase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.invoke
-import kotlinx.coroutines.launch
 
 class MapViewModel(
     private val loadSavedFilterOptionsUseCase: LoadSavedFilterOptionsUseCase,

@@ -19,6 +19,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.viewpager2.widget.CompositePageTransformer
+import androidx.viewpager2.widget.MarginPageTransformer
+import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraAnimation
@@ -39,7 +42,9 @@ import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailCloseInterface
 import com.wannabeinseoul.seoulpublicservice.ui.detail.DetailFragment
 import com.wannabeinseoul.seoulpublicservice.ui.dialog.filter.FilterFragment
 import com.wannabeinseoul.seoulpublicservice.ui.main.MainViewModel
+import com.wannabeinseoul.seoulpublicservice.util.inSeoulOrNull
 import com.wannabeinseoul.seoulpublicservice.util.toastShort
+import kotlin.math.abs
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
@@ -94,12 +99,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 })
                 dialog.show(requireActivity().supportFragmentManager, "Detail")
             },
+            backFromClickMarker = {
+                backFromClickMarker()
+            },
             savedPrefRepository = viewModel.getSavedPrefRepository()
         )
     }
 
     private val viewModel: MapViewModel by viewModels { MapViewModel.factory }
     private val mainViewModel: MainViewModel by activityViewModels { MainViewModel.factory }
+
+    private val cityHall = LatLng(37.5666, 126.9782)
 
     private val matchingColor = hashMapOf(
         "체육시설" to R.color.marker1_solid,
@@ -139,7 +149,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             false
         )
 
-        mapView = binding.root.findViewById(R.id.mv_naver) as MapView
+        mapView = binding.root.findViewById(R.id.mv_naver)!!
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
 
@@ -158,14 +168,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun initView() {
+        val transform = CompositePageTransformer()
+        transform.addTransformer(MarginPageTransformer(8))
+        transform.addTransformer { view: View, fl: Float ->
+            val v = 1 - abs(fl)
+            view.scaleY = 0.8f + v * 0.2f
+        }
+
         binding.vpMapDetailInfo.adapter = adapter
+        binding.vpMapDetailInfo.offscreenPageLimit = 3
+        binding.vpMapDetailInfo.setPageTransformer(transform)
         binding.vpMapDetailInfo.registerOnPageChangeCallback(object : OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                binding.tvMapInfoCount.text = "${position + 1}"
+//                binding.tvMapInfoCount.text = "${position + 1}"
             }
         })
-        binding.vpMapDetailInfo.offscreenPageLimit = 1
 
         binding.rvMapSelectedOption.adapter = rvAdapter
         rvAdapter.submitList(viewModel.loadSavedOptions().flatten())
@@ -201,16 +219,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 } else {
                     mainViewModel.setMappingData(true)
                 }
+
                 setInitialState()
-                moveCamera(null, null, 10.0)
+                moveCamera(latLng = null, 10.0)
+
                 true
             }
+
             false
         }
 
         binding.etMapSearch.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 changeDetailVisible(false)
+                backFromClickMarker()
             }
         }
     }
@@ -223,8 +245,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 } else {
                     mainViewModel.setMappingData(true)
                 }
-                rvAdapter.submitList(viewModel.loadSavedOptions().flatten())
-                moveCamera(null, null, 10.0)
+
                 if (viewModel.loadSavedOptions().any { it.isNotEmpty() }) {
                     binding.tvMapFilterBtn.setTextColor(requireContext().getColor(R.color.point_color))
                     binding.clMapFilterCount.isVisible = true
@@ -233,6 +254,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     binding.tvMapFilterBtn.setTextColor(requireContext().getColor(R.color.total_text_color))
                     binding.clMapFilterCount.isVisible = false
                 }
+
+                rvAdapter.submitList(viewModel.loadSavedOptions().flatten())
+                moveCamera(latLng = null, 10.0)
             }
         }
 
@@ -244,15 +268,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun initViewModel() = with(viewModel) {
         updateData.observe(viewLifecycleOwner) { list ->
             adapter.submitList(list.toList())
-            binding.tvMapInfoCount.text = "1"
+//            binding.tvMapInfoCount.text = "1"
         }
 
         filteringData.observe(viewLifecycleOwner) { dataSet ->
             activeMarkers.forEach {
                 it.map = null
             }
+
             activeMarkers.clear()
-            // 다른 페이지에서 공유뷰모델을 이용하여 데이터를 변경할 때마다 다 뜨기 때문에 방법을 찾기 전까지는 제외해놓음
+
             if (mainViewModel.isSearch) {
                 if (dataSet.size == 0) {
                     toastShort(requireContext(), "필터링 결과가 없습니다.")
@@ -263,13 +288,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             dataSet.forEach {
                 val marker = Marker()
-                activeMarkers.add(marker)
                 marker.position = LatLng(it.key.first.toDouble(), it.key.second.toDouble())
                 marker.map = naverMap
                 marker.icon = if (naverMap!!.cameraPosition.zoom > 13.1) {
                     MarkerIcons.BLACK
                 } else {
-                    createDotIcon(it.value[0].maxclassnm)
+                    createDotIcon()
                 }
                 marker.iconTintColor = requireContext().getColor(
                     matchingColor[it.value[0].maxclassnm] ?: R.color.gray
@@ -293,9 +317,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     selectedMarker = marker
                     viewModel.updateInfo(it.value)
                     binding.vpMapDetailInfo.setCurrentItem(0, false)
-                    moveCamera(it.key.first.toDouble(), it.key.second.toDouble())
+                    moveCamera(LatLng(it.key.first.toDouble(), it.key.second.toDouble()))
                     true
                 }
+
+                activeMarkers.add(marker)
             }
         }
     }
@@ -329,6 +355,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
             map.locationTrackingMode = LocationTrackingMode.NoFollow
         }
+
         map.uiSettings.isLogoClickEnabled = false
         map.uiSettings.isScaleBarEnabled = false
         map.uiSettings.isCompassEnabled = false
@@ -339,6 +366,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         moveCamera(latLng = null, 14.5)
     }
 
+    /** 줌레벨 조건에 맞춰 마커를 업데이트하는 함수 */
     private fun updateMarker() {
         val zoom = naverMap!!.cameraPosition.zoom
 
@@ -354,55 +382,46 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         } else {
             activeMarkers.forEach {
                 if (it != selectedMarker) {
-                    it.icon = createDotIcon(it.tag.toString())
+                    it.icon = createDotIcon()
                 }
             }
         }
     }
 
-    private fun createDotIcon(tag: String): OverlayImage {
+    /** 원형 점 아이콘을 만드는 함수 */
+    private fun createDotIcon(): OverlayImage {
         val size = 30  // 점의 크기 (픽셀)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, fillPaint)
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, strokePaint)
+
         return OverlayImage.fromBitmap(bitmap)
     }
 
-    private val cityHall = LatLng(37.5666, 126.9782)
-    private fun LatLng.inSeoulOrNull() =
-        if (this.latitude in 37.413294..37.715133 &&
-            this.longitude in 126.734086..127.269311
-        ) this else null
-
-    /** null이면 차례대로 파라미터 좌표 -> 현재위치(서울범위) -> 시청 */
+    /** LatLng를 넣었을 때 조건에 맞춰 카메라를 움직이는 함수
+     *
+     * null이면 차례대로 파라미터 좌표 -> 현재위치(서울범위) -> 시청 */
     private fun moveCamera(latLng: LatLng?, zoom: Double = 15.0) {
         val pos = latLng ?: app.getLastLatLng()?.inSeoulOrNull() ?: cityHall
         val cameraUpdate = CameraUpdate.scrollAndZoomTo(pos, zoom)
             .animate(CameraAnimation.Easing, 600)
+
         naverMap?.moveCamera(cameraUpdate)
     }
 
-    /** null이면 차례대로 파라미터 좌표 -> 현재위치(서울범위) -> 시청 */
-    private fun moveCamera(y: Double?, x: Double?, zoom: Double = 15.0) {
-        val latLng = if (y == null || x == null) null else LatLng(y, x)
-        moveCamera(latLng, zoom)
-    }
-
+    /** 카메라를 시청으로 옮기는 함수 */
     private fun moveCameraToCityHall() = moveCamera(cityHall, 15.0)
 
+    /** 정보창 노출 여부를 세팅하는 함수 */
     private fun changeDetailVisible(flag: Boolean) {
         binding.vpMapDetailInfo.isVisible = flag
-        binding.clMapInfoCount.isVisible = flag
+//        binding.clMapInfoCount.isVisible = flag
         binding.fabMapCurrentLocation.isVisible = !flag
     }
 
-    private fun zoomOut() {
-        val cameraUpdate = CameraUpdate.zoomTo(14.5).animate(CameraAnimation.Easing, 300)
-        naverMap?.moveCamera(cameraUpdate)
-    }
-
+    /** 지도페이지 초기 상태로 돌리는 함수 */
     private fun setInitialState() {
         binding.etMapSearch.clearFocus()
 
@@ -414,9 +433,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
+    /** 클릭한 마커를 다시 초기상태로 돌리는 함수 */
     private fun backFromClickMarker() {
         changeDetailVisible(false)
-//        zoomOut()
 
         val zoom = naverMap!!.cameraPosition.zoom
 
@@ -424,7 +443,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             marker.icon = if (zoom > 13.1) {
                 MarkerIcons.BLACK
             } else {
-                createDotIcon(marker.tag.toString())
+                createDotIcon()
             }
 
             marker.iconTintColor =
@@ -435,6 +454,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         selectedMarker = null
     }
 
+    /** 지도페이지에서의 뒤로가기 버튼 처리 함수 */
     private fun addCallBack() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (binding.etMapSearch.hasFocus()) {

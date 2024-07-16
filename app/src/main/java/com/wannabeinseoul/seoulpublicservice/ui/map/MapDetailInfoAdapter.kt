@@ -18,6 +18,7 @@ class MapDetailInfoAdapter(
     private val moveReservationPage: (String) -> Unit,
     private val shareUrl: (String) -> Unit,
     private val moveDetailPage: (String) -> Unit,
+    private val backFromClickMarker: () -> Unit,
     private val savedPrefRepository: SavedPrefRepository
 ) : ListAdapter<DetailInfoWindow, MapDetailInfoAdapter.InfoViewHolder>(object : DiffUtil.ItemCallback<DetailInfoWindow>() {
     override fun areItemsTheSame(oldItem: DetailInfoWindow, newItem: DetailInfoWindow): Boolean {
@@ -30,7 +31,7 @@ class MapDetailInfoAdapter(
 
 }) {
     abstract class InfoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract fun onBind(item: DetailInfoWindow)
+        abstract fun onBind(item: DetailInfoWindow, position: Int)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -55,6 +56,7 @@ class MapDetailInfoAdapter(
                     moveReservationPage = moveReservationPage,
                     shareUrl = shareUrl,
                     moveDetailPage = moveDetailPage,
+                    backFromClickMarker = backFromClickMarker,
                     savedPrefRepository = savedPrefRepository
                 )
             }
@@ -72,7 +74,7 @@ class MapDetailInfoAdapter(
     }
 
     override fun onBindViewHolder(holder: InfoViewHolder, position: Int) {
-        holder.onBind(getItem(position))
+        holder.onBind(getItem(position), position)
     }
 
     class DetailInfoViewHolder(
@@ -81,20 +83,30 @@ class MapDetailInfoAdapter(
         private val moveReservationPage: (String) -> Unit,
         private val shareUrl: (String) -> Unit,
         private val moveDetailPage: (String) -> Unit,
+        private val backFromClickMarker: () -> Unit,
         private val savedPrefRepository: SavedPrefRepository
     ) : InfoViewHolder(binding.root) {
-        override fun onBind(item: DetailInfoWindow) = with(binding) {
+        override fun onBind(item: DetailInfoWindow, position: Int) = with(binding) {
             if (item.saved) {
                 ivMapInfoSaveServiceBtn.setImageResource(R.drawable.ic_save_fill)
                 ivMapInfoSaveServiceBtn.drawable.setTint(Color.parseColor("#F8496C"))
             } else {
                 ivMapInfoSaveServiceBtn.setImageResource(R.drawable.ic_save_empty)
             }
+            tvMapInfoCount.text = (position + 1).toString()
             ivMapInfoPicture.loadWithHolder(item.imgurl)
             tvMapInfoRegion.text = item.areanm
             tvMapInfoService.text =
                 HtmlCompat.fromHtml(item.svcnm, HtmlCompat.FROM_HTML_MODE_LEGACY)
-            tvMapInfoPay.text = item.payatnm
+            tvMapInfoPay.text = when (item.payatnm) {
+                "무료" -> {
+                    "무료"
+                }
+
+                else -> {
+                    "유료"
+                }
+            }
             btnMapInfoReservation.text = when (item.svcstatnm) {
                 "안내중" -> {
                     "예약안내"
@@ -138,8 +150,12 @@ class MapDetailInfoAdapter(
                 shareUrl(item.svcurl)
             }
 
-            binding.clMapInfoWindow.setOnClickListener {
+            binding.clMapDetailInfoWindow.setOnClickListener {
                 moveDetailPage(item.svcid)
+            }
+
+            binding.clMapInfoWindowFrame.setOnClickListener {
+                backFromClickMarker()
             }
         }
     }
@@ -147,6 +163,6 @@ class MapDetailInfoAdapter(
     class UnknownInfoViewHolder(
         private val binding: ItemMapInfoWindowBinding
     ) : InfoViewHolder(binding.root) {
-        override fun onBind(item: DetailInfoWindow) = Unit
+        override fun onBind(item: DetailInfoWindow, position: Int) = Unit
     }
 }

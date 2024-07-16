@@ -1,98 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cl_map_info_window"
+    android:id="@+id/cl_map_info_window_frame"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="5dp"
-    android:background="@drawable/background_radius_12dp"
-    android:clipToOutline="true"
-    android:elevation="5dp">
+    android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/iv_map_info_picture"
-        android:layout_width="120dp"
-        android:layout_height="90dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="25dp"
-        android:layout_marginBottom="15dp"
-        android:background="@drawable/background_service_item_layout"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_map_info_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@color/point_color"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_map_info_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fragment_map_filter_count"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_map_detail_info_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:background="@drawable/background_radius_12dp"
         android:clipToOutline="true"
-        android:scaleType="centerCrop"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:elevation="5dp"
+        app:layout_constraintTop_toBottomOf="@+id/cl_map_info_count">
 
-    <TextView
-        android:id="@+id/tv_map_info_region"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="-2dp"
-        android:text="@string/item_map_info_region"
-        android:textSize="11sp"
-        app:layout_constraintStart_toEndOf="@+id/iv_map_info_picture"
-        app:layout_constraintTop_toTopOf="@+id/iv_map_info_picture" />
+        <ImageView
+            android:id="@+id/iv_map_info_picture"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginVertical="8dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/background_service_item_layout"
+            android:clipToOutline="true"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tv_map_info_service"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="@string/item_map_info_place"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@+id/btn_map_info_reservation"
-        app:layout_constraintHorizontal_bias="0.05"
-        app:layout_constraintStart_toStartOf="@+id/tv_map_info_region"
-        app:layout_constraintTop_toBottomOf="@+id/tv_map_info_region" />
+        <TextView
+            android:id="@+id/tv_map_info_region"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/item_map_info_region"
+            android:textSize="11sp"
+            app:layout_constraintStart_toEndOf="@+id/iv_map_info_picture"
+            app:layout_constraintStart_toStartOf="@+id/tv_map_info_service"
+            app:layout_constraintTop_toBottomOf="@+id/tv_map_info_service" />
 
-    <ImageView
-        android:id="@+id/iv_map_info_save_service_btn"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@drawable/ic_save_empty"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_map_info_reservation"
-        app:layout_constraintStart_toStartOf="@+id/tv_map_info_service"
-        app:layout_constraintTop_toTopOf="@+id/btn_map_info_reservation" />
+        <TextView
+            android:id="@+id/tv_map_info_service"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="@string/item_map_info_place"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/btn_map_info_reservation"
+            app:layout_constraintHorizontal_bias="0.05"
+            app:layout_constraintStart_toEndOf="@+id/iv_map_info_picture"
+            app:layout_constraintTop_toTopOf="@+id/iv_map_info_picture" />
 
-    <ImageView
-        android:id="@+id/iv_map_info_share_btn"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="4dp"
-        android:src="@drawable/ic_share"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_map_info_reservation"
-        app:layout_constraintStart_toEndOf="@+id/iv_map_info_save_service_btn"
-        app:layout_constraintTop_toTopOf="@+id/btn_map_info_reservation" />
+        <ImageView
+            android:id="@+id/iv_map_info_save_service_btn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_save_empty"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_map_info_reservation"
+            app:layout_constraintStart_toStartOf="@+id/tv_map_info_region"
+            app:layout_constraintTop_toTopOf="@+id/btn_map_info_reservation" />
 
-    <TextView
-        android:id="@+id/tv_map_info_pay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:background="@drawable/background_radius_4dp_f8496c"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="2dp"
-        android:text="@string/item_map_info_pay"
-        android:textColor="@color/white"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/tv_map_info_region"
-        app:layout_constraintEnd_toEndOf="@+id/btn_map_info_reservation" />
+        <ImageView
+            android:id="@+id/iv_map_info_share_btn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_share"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_map_info_reservation"
+            app:layout_constraintStart_toEndOf="@+id/iv_map_info_save_service_btn"
+            app:layout_constraintTop_toTopOf="@+id/btn_map_info_reservation" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_map_info_reservation"
-        android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:layout_marginEnd="12dp"
-        android:background="@drawable/selector_okay_button"
-        android:paddingHorizontal="20dp"
-        android:text="@string/item_map_info_reservation"
-        android:textColor="@color/selector_okay_button_text"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_map_info_picture"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <ImageView
+            android:id="@+id/iv_map_info_find_route_btn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_findroute"
+            app:layout_constraintBottom_toBottomOf="@+id/iv_map_info_share_btn"
+            app:layout_constraintStart_toEndOf="@+id/iv_map_info_share_btn"
+            app:layout_constraintTop_toTopOf="@+id/iv_map_info_share_btn" />
+
+        <TextView
+            android:id="@+id/tv_map_info_pay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_radius_4dp_f8496c"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="2dp"
+            android:text="@string/item_map_info_pay"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/iv_map_info_picture"
+            app:layout_constraintTop_toTopOf="@+id/iv_map_info_picture" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_map_info_reservation"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/selector_okay_button"
+            android:paddingHorizontal="20dp"
+            android:text="@string/item_map_info_reservation"
+            android:textColor="@color/selector_okay_button_text"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/iv_map_info_picture"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
